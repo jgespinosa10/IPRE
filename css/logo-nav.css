@@ -13,3 +13,12 @@ body {
     padding-top: 56px;
   }
 }
+
+.button {
+  background-color: rgb(206, 206, 206);
+  color: rgb(0, 0, 0);
+  text-align: center;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}

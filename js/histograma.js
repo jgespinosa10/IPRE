@@ -41,6 +41,7 @@ var Ylabel = svg.append("text")
 				.attr("style", "font-size: 20")
 				.style("text-anchor", "middle")
 				.text("cantidad");
+
 var	Xlabel = svg.append("text")
 				.attr("class", "label-x")
 				.attr("transform",
@@ -55,6 +56,8 @@ var colors = d3.scaleOrdinal(d3.schemeCategory10);
 var legendw = width + 30;
 var legendh = height*2/3 + 10;
 
+var colores = d3.schemeCategory10;
+
 d3.csv("data/Datos_programacion.csv").then(dataset => {
   	symbols = d3.nest()
 		.key(function(d) {return d["RAMO"]})
@@ -66,31 +69,78 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			"2018" : d[0]["Alumnos que falta por aprobar 2018"]}})
 		.entries(dataset);
 
-	console.log(symbols[0]);
-
-	var botones = d3.select("body").append("svg")
-			.attr("height", 20)
-			.attr("width", 50);
-	
-	var boton = d3.button();
-
 	var ramos = [];
+	
 	symbols.forEach(element => {
-		ramos.push({"text": element.key});
+		ramos.push({"text": element.key});	
 	});
+
+	var botones = d3.select("body")
+					.append("div");
+	
+	botones.append("button")
+			.text("matemáticas discretas")
+			.on("click", quitar)
+			.attr("class", "button");
+
+	d3.select("body")
+		.append("br")
+
+	select = d3.select("body")
+				.append("div")
+				.attr("class", "input-group-prepend");
+
+	select.append("label")
+			.attr("for", "Select")
+			.text("Selecciona ramo")
+			.attr("class", "input-group-text");
+
+	select.append("select")
+			.attr("id", "Select")
+			.attr("class", "custom-select");
+
 	var input = d3.select("#Select")
-					.on('change', change)
+					.on('change', anadir)
 				.selectAll('option')
 					.data(ramos)
 					.enter()
 				.append('option')
 					.attr('value', function(d) {return d.text})
 					.text(function (d) {return d.text});
-	
-	console.log(symbols);
+
+	cantidad = {};
+	symbols.forEach(d => {
+		var anos = [];
+		d.values.forEach(element => {
+			for(let i = 2012; i <= 2018; i++) {
+				if(anos.length < 7) {
+					if(element.value[i] != "") {
+						anos.push({x: i, y: parseInt(element.value[i])});
+					}
+					else {
+						anos.push({x: i, y: 0});
+					};
+				}
+				else {
+					if(element.value[i] != "") {
+						anos[i - 2012].y += parseInt(element.value[i]);
+					}
+				};
+			};
+		});
+		cantidad[d.key] = anos;
+	});
+
+	// cambio de barras
+	yScale.domain([0, 1.05*Math.max.apply(Math, cantidad["Matemáticas Discretas"].map(function(o) {return o.y}))]);
+
+	// Falta poner barras simples, luego completar las funciones anadir y quitar
 
 });
 
-function change() {
+function anadir() {
 
+};
+
+function quitar() {
 };
