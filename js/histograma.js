@@ -133,8 +133,17 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 
 	// cambio de barras
 	yScale.domain([0, 1.05*Math.max.apply(Math, cantidad["Matemáticas Discretas"].map(function(o) {return o.y}))]);
-
+	yAxis.transition().call(yGen);
+	console.log(cantidad["Matemáticas Discretas"]);
 	// Falta poner barras simples, luego completar las funciones anadir y quitar
+	svg.selectAll("barras")
+		.data(cantidad["Matemáticas Discretas"])
+		.enter().append("rect")
+		.style("fill", colores[0])
+		.attr("x", function(d) { return xScale(d.x) - 20;})
+		.attr("width", 40)
+      	.attr("y", function(d) { return yScale(d.y);})
+      	.attr("height", function(d) { return (height - yScale(d.y)); });
 
 });
 
