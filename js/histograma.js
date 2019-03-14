@@ -1,6 +1,7 @@
-const WIDTH = 700;
+
+const WIDTH = 1300;
 const HEIGHT = 500;
-const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 50 };
+const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 650 };
 
 const width = WIDTH - MARGIN.RIGHT - MARGIN.LEFT;
 const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
@@ -15,8 +16,11 @@ var svg = d3.select("body").append("svg")
 
 var xScale = d3.scaleLinear()
 				.range([0, width])
-				.domain([2011.5 , 2018.5]);
+				.domain([2012.5 , 2018.5]);
 var yScale = d3.scaleLinear()
+				.range([height, 0]);
+
+var yScale0 = d3.scaleLinear()
 				.range([height, 0]);
 
 var xGen = d3.axisBottom(xScale)
@@ -40,7 +44,7 @@ var Ylabel = svg.append("text")
 				.attr("dy", "1em")
 				.attr("style", "font-size: 20")
 				.style("text-anchor", "middle")
-				.text("cantidad");
+				.text("Alumnos");
 
 var	Xlabel = svg.append("text")
 				.attr("class", "label-x")
@@ -49,7 +53,12 @@ var	Xlabel = svg.append("text")
 									 (height + MARGIN.TOP + 10) + ")")
 				.attr("style", "font-size: 20")
 				.style("text-anchor", "middle")
-				.text("personas");
+				.text("generación");
+
+// anadir zoom
+// var zoom = d3.zoom()
+//     .scaleExtent([1, 40])
+//     .on("zoom", zoomed);
 
 var colors = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -57,31 +66,60 @@ var legendw = width + 30;
 var legendh = height*2/3 + 10;
 
 var colores = d3.schemeCategory10;
+colores = colores.concat(d3.schemeAccent);
+colores = colores.concat(d3.schemeDark2);
+colores = colores.concat(d3.schemePaired);
+colores = colores.concat(d3.schemeSet1);
+colores = colores.concat(d3.schemeSet2);
+
+var eso = 0;
+
+var botones = 0;
+var ramos2 = {};
+var simbolos = {};
+var paleta = {};
+var cantidad = {};
+
+var y0 = {};
+for(let i = 2013; i <= 2018; i++) {
+	y0[i] = 0;
+};
+
+var grafics = ["Matemáticas Discretas"];
 
 d3.csv("data/Datos_programacion.csv").then(dataset => {
+	eso = d3.nest()
+				.key(function(d) {return d["BLOQUE ACADÉMICO"]})
+				.entries(dataset);
+	eso.forEach((d, i) => {
+		paleta[d.key] = colores[i];
+	});
   	symbols = d3.nest()
 		.key(function(d) {return d["RAMO"]})
 		.key(function(d) {return d["BLOQUE ACADÉMICO"]})
 		.rollup(function(d) {return {"Track" : d[0]["TRACK/ÁREA"], "N": d[0]["N° VERSIONES"], "TCurso" : d[0]["TIPO CURSO"], 
-			"TOpt" : d[0]["TIPO OPTATIVIDAD"], "2012" : d[0]["Alumnos que falta por aprobar 2012"], "2013" : d[0]["Alumnos que falta por aprobar 2013"],
-			"2014" : d[0]["Alumnos que falta por aprobar 2014"], "2015" : d[0]["Alumnos que falta por aprobar 2015"], 
-			"2016" : d[0]["Alumnos que falta por aprobar 2016"], "2017" : d[0]["Alumnos que falta por aprobar 2017"],
+			"TOpt" : d[0]["TIPO OPTATIVIDAD"], 
+			"2013" : d[0]["Alumnos que falta por aprobar 2013"],
+			"2014" : d[0]["Alumnos que falta por aprobar 2014"],
+			"2015" : d[0]["Alumnos que falta por aprobar 2015"], 
+			"2016" : d[0]["Alumnos que falta por aprobar 2016"],
+			"2017" : d[0]["Alumnos que falta por aprobar 2017"],
 			"2018" : d[0]["Alumnos que falta por aprobar 2018"]}})
 		.entries(dataset);
-
-	var ramos = [];
 	
-	symbols.forEach(element => {
-		ramos.push({"text": element.key});	
+	var ramos = [];
+	symbols.forEach((element, i) => {
+		ramos.push({"text": element.key});
+		ramos2[element.key] = i;
 	});
 
-	var botones = d3.select("body")
+	botones = d3.select("body")
 					.append("div");
 	
 	botones.append("button")
-			.text("matemáticas discretas")
+			.text("Matemáticas Discretas")
 			.on("click", quitar)
-			.attr("class", "button");
+			.attr("class", "button ");
 
 	d3.select("body")
 		.append("br")
@@ -108,11 +146,24 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 					.attr('value', function(d) {return d.text})
 					.text(function (d) {return d.text});
 
-	cantidad = {};
 	symbols.forEach(d => {
+		let total = [];
+		for(let i = 2013; i <= 2018; i++) {
+			d.values.forEach(element => {
+				if(element.value[i] != "") {
+					total.push({year: i, major: element.key, valor: parseInt(element.value[i])});
+				}
+				else {
+					total.push({year: i, major: element.key, valor: 0});
+				}
+			});
+		};
+		total.sort(function(a , b) { return (b.valor - a.valor);});
+		simbolos[d.key] = total;
+
 		var anos = [];
 		d.values.forEach(element => {
-			for(let i = 2012; i <= 2018; i++) {
+			for(let i = 2013; i <= 2018; i++) {
 				if(anos.length < 7) {
 					if(element.value[i] != "") {
 						anos.push({x: i, y: parseInt(element.value[i])});
@@ -123,33 +174,254 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 				}
 				else {
 					if(element.value[i] != "") {
-						anos[i - 2012].y += parseInt(element.value[i]);
+						anos[i - 2013].y += parseInt(element.value[i]);
 					}
 				};
 			};
 		});
 		cantidad[d.key] = anos;
 	});
-
 	// cambio de barras
-	yScale.domain([0, 1.05*Math.max.apply(Math, cantidad["Matemáticas Discretas"].map(function(o) {return o.y}))]);
-	yAxis.transition().call(yGen);
-	console.log(cantidad["Matemáticas Discretas"]);
-	// Falta poner barras simples, luego completar las funciones anadir y quitar
-	svg.selectAll("barras")
-		.data(cantidad["Matemáticas Discretas"])
-		.enter().append("rect")
-		.style("fill", colores[0])
-		.attr("x", function(d) { return xScale(d.x) - 20;})
-		.attr("width", 40)
-      	.attr("y", function(d) { return yScale(d.y);})
-      	.attr("height", function(d) { return (height - yScale(d.y)); });
+	let mayor = Math.max.apply(Math, cantidad["Matemáticas Discretas"].map(function(o) {return o.y}));
+	yScale.domain([0, 1.05*mayor]);
+	yScale0.domain([0, 1.05*mayor]);
 
+	yAxis.transition().call(yGen);
+	// Falta poner barras simples, luego completar las funciones anadir y quitar
+	simbolos["Matemáticas Discretas"].forEach(d => {
+		if(d.valor > 0 ) {
+			svg.append("rect")
+				.attr("class", "barras " + "numero" + ramos2["Matemáticas Discretas"])
+				.attr("x", (xScale(d.year) - 40))
+				.attr("y", yScale(y0[d.year] + d.valor))
+				.attr("fill", paleta[d.major])
+				.attr("height", height - yScale(d.valor))
+				.attr("width", 80)
+				.attr("stroke", "black")
+				.attr("stroke-width", 2)
+				.attr("stroke-opacity", 0)
+				.on("mouseover", function() {
+					d3.select(this)
+						.attr("stroke-opacity", 1);
+
+					svg.append("circle")
+						.attr("r", 3)
+						.attr("x", width + 5)
+						.attr("y", 70)
+						.
+
+					svg.append("text")
+						.attr("class", "major" )
+						.attr("y", 50)
+						.attr("x", width + 10)
+						.attr("dy", "1em")
+						.attr("style", "font-size: 10")
+						.style("text-anchor", "left")
+						.text("Matemáticas Discretas:");
+
+					svg.append("text")
+						.attr("class", "major" )
+						.attr("y", 70)
+						.attr("x", width + 10)
+						.attr("dy", "1em")
+						.attr("style", "font-size: 10")
+						.style("text-anchor", "left")
+						.text(d.major);
+
+					svg.append("text")
+						.attr("class", "major" )
+						.attr("y", 90)
+						.attr("x", width + 10)
+						.attr("dy", "1em")
+						.attr("style", "font-size: 10")
+						.style("text-anchor", "left")
+						.text(d.valor);
+
+				})
+				.on("mouseout", function() {
+					d3.select(this)
+						.attr("stroke-opacity", 0);
+					d3.selectAll(".major").remove()
+				});
+			y0[d.year] += d.valor;
+		}	
+	})
+
+	for(let i = 2013; i <= 2018; i++) {
+		y0[i] = 0;
+	};
 });
 
 function anadir() {
+	// anadir ramo al grafico
+	grafics.push(this.value);
 
+	// Cambiar axis
+	let mayor = 0
+	grafics.forEach(d => {
+		let grande = Math.max.apply(Math, cantidad[d].map(function(o) {return o.y}));
+		if(grande > mayor) mayor = grande;
+	});
+	yScale.domain([0, 1.05*mayor]);
+	yAxis.transition().call(yGen);
+
+	// Poner barras nuevas y cambiar antiguas;
+	grafics.forEach((d,i) => {
+		if(i < grafics.length - 1) {
+			svg.selectAll(".numero" + ramos2[d]).remove();
+		};
+		simbolos[d].forEach(element => {
+			if(element.valor > 0 ) {
+				svg.append("rect")
+					.attr("class", "barras " + "numero" + ramos2[d])
+					.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
+					.attr("y", yScale(y0[element.year] + element.valor))
+					.attr("fill", paleta[element.major])
+					.attr("height", height - yScale(element.valor))
+					.attr("width", 80/grafics.length)
+					.attr("stroke", "black")
+					.attr("stroke-width", 1)
+					.attr("stroke-opacity", 0)
+					.on("mouseover", function() {
+						d3.select(this)
+							.attr("stroke-opacity", 1);
+
+						svg.append("text")
+							.attr("class", "major" )
+							.attr("y", 50)
+							.attr("x", width + 10)
+							.attr("dy", "1em")
+							.attr("style", "font-size: 10")
+							.style("text-anchor", "left")
+							.text(d + ":");
+						
+						svg.append("text")
+							.attr("class", "major" )
+							.attr("y", 70)
+							.attr("x", width + 10)
+							.attr("dy", "1em")
+							.attr("style", "font-size: 10")
+							.style("text-anchor", "left")
+							.text(element.major);
+
+						svg.append("text")
+							.attr("class", "major" )
+							.attr("y", 90)
+							.attr("x", width + 10)
+							.attr("dy", "1em")
+							.attr("style", "font-size: 10")
+							.style("text-anchor", "left")
+							.text(element.valor);
+					})
+					.on("mouseout", function() {
+						d3.select(this)
+							.attr("stroke-opacity", 0);
+						
+						svg.selectAll(".major").remove()
+					});
+				y0[element.year] += element.valor;
+			};
+		});
+		for(let i = 2013; i <= 2018; i++) {
+			y0[i] = 0;
+		};
+	})
+	
+	// anadir boton
+	botones.append("button")
+			.text(this.value)
+			.on("click", quitar)
+			.attr("class", "button");
 };
 
 function quitar() {
+	// Quitar barras
+	svg.selectAll(".numero" + ramos2[this.textContent]).remove();
+	
+	// quitar ramo del grafico
+	let index = grafics.indexOf(this.textContent);
+	if (index > -1) {
+		grafics.splice(index, 1);
+	};
+
+	// Cambiar axis
+	let mayor = 0
+	grafics.forEach(d => {
+		let grande = Math.max.apply(Math, cantidad[d].map(function(o) {return o.y}));
+		if(grande > mayor) mayor = grande;
+	});
+	yScale.domain([0, 1.05*mayor]);
+	yAxis.transition().call(yGen);
+
+	// cambiar graficos existentes
+	grafics.forEach((d,i) => {
+		svg.selectAll(".numero" + ramos2[d]).remove();
+		simbolos[d].forEach(element => {
+			if(element.valor > 0 ) {
+				svg.append("rect")
+					.attr("class", "barras " + "numero" + ramos2[d])
+					.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
+					.attr("y", yScale(y0[element.year] + element.valor))
+					.attr("fill", paleta[element.major])
+					.attr("height", height - yScale(element.valor))
+					.attr("width", 80/grafics.length)
+					.attr("stroke", "black")
+					.attr("stroke-width", 2)
+					.attr("stroke-opacity", 0)
+					.on("mouseover", function() {
+						d3.select(this)
+							.attr("stroke-opacity", 1);
+						
+						svg.append("text")
+							.attr("class", "major" )
+							.attr("y", 50)
+							.attr("x", width + 10)
+							.attr("dy", "1em")
+							.attr("style", "font-size: 10")
+							.style("text-anchor", "left")
+							.text(d+":");
+						
+						svg.append("text")
+							.attr("class", "major" )
+							.attr("y", 70)
+							.attr("x", width + 10)
+							.attr("dy", "1em")
+							.attr("style", "font-size: 10")
+							.style("text-anchor", "left")
+							.text(element.major);
+
+						svg.append("text")
+							.attr("class", "major" )
+							.attr("y", 90)
+							.attr("x", width + 10)
+							.attr("dy", "1em")
+							.attr("style", "font-size: 10")
+							.style("text-anchor", "left")
+							.text(element.valor);
+					})
+					.on("mouseout", function() {
+						d3.select(this)
+							.attr("stroke-opacity", 0);
+						
+						svg.selectAll(".major").remove()
+					});
+				y0[element.year] += element.valor;
+			};
+		})
+		for(let i = 2013; i <= 2018; i++) {
+			y0[i] = 0;
+		};
+	});
+
+	yScale0.domain([0, 1.05*mayor]);
+
+	// quitar el boton
+	d3.select(this).remove();
+
 };
+
+// function zoomed() {
+// 	view.attr("transform", d3.event.transform);
+// 	xAxis.call(xGen.scale(d3.event.transform.rescaleX(x)));
+// 	yAxis.call(yGen.scale(d3.event.transform.rescaleY(y)));
+// };
