@@ -55,6 +55,13 @@ var	Xlabel = svg.append("text")
 				.style("text-anchor", "middle")
 				.text("generación");
 
+var	tooltip = d3.select("body").append("div")
+	                .style("position", "absolute")
+	                .attr("class", "tooltip")
+	                .style("left", "50px")
+	                .style("top", "50px")
+	                .style("opacity", 0);
+
 // anadir zoom
 // var zoom = d3.zoom()
 //     .scaleExtent([1, 40])
@@ -83,7 +90,9 @@ var cantidad = {};
 var y0 = {};
 for(let i = 2013; i <= 2018; i++) {
 	y0[i] = 0;
-};
+}
+var t = d3.transition()
+            .duration(800);
 
 var grafics = ["Matemáticas Discretas"];
 
@@ -193,13 +202,9 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			svg.append("rect")
 				.attr("class", "barras " + "numero" + ramos2["Matemáticas Discretas"])
 				.attr("x", (xScale(d.year) - 40))
-				.attr("y", yScale(y0[d.year] + d.valor))
-				.attr("fill", paleta[d.major])
-				.attr("height", height - yScale(d.valor))
+				.attr("y", height)
+				.attr("height", 0)
 				.attr("width", 80)
-				.attr("stroke", "black")
-				.attr("stroke-width", 2)
-				.attr("stroke-opacity", 0)
 				.on("mouseover", function() {
 					d3.select(this)
 						.attr("stroke-opacity", 1);
@@ -208,7 +213,6 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 						.attr("r", 3)
 						.attr("x", width + 5)
 						.attr("y", 70)
-						.
 
 					svg.append("text")
 						.attr("class", "major" )
@@ -237,12 +241,35 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 						.style("text-anchor", "left")
 						.text(d.valor);
 
+					tooltip.transition()
+                    .duration(300)
+                    .style("opacity", 1);
+
+                    tooltip
+                    .style("left", (d3.event.pageX + 10) + "px")
+                    .style("top", (d3.event.pageY + 10) + "px")
+                    .html(d.major +  "<br>" + "Alumnos: " + d.valor
+                     + "<br>" + "Total Año: " + total(d.year, "Matemáticas Discretas"))
+
 				})
 				.on("mouseout", function() {
 					d3.select(this)
 						.attr("stroke-opacity", 0);
 					d3.selectAll(".major").remove()
-				});
+					tooltip
+	    	  			.style("opacity", 0)
+				})
+				.on("mousemove", function(d) {
+					tooltip
+				      .style("left", (d3.event.pageX + 10) + "px")
+				      .style("top", (d3.event.pageY - 30) + "px")})
+				.transition(t)
+				.attr("y", yScale(y0[d.year] + d.valor))
+				.attr("fill", paleta[d.major])
+				.attr("height", height - yScale(d.valor))
+				.attr("stroke", "black")
+				.attr("stroke-width", 2)
+				.attr("stroke-opacity", 0)
 			y0[d.year] += d.valor;
 		}	
 	})
@@ -251,6 +278,16 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 		y0[i] = 0;
 	};
 });
+
+function total(ano, ramo) {
+	a = 0
+	cantidad[ramo].forEach(function(d){
+		if (d.x == ano){
+			a = d.y;
+		}
+	})
+	return a
+	}
 
 function anadir() {
 	// anadir ramo al grafico
@@ -275,13 +312,9 @@ function anadir() {
 				svg.append("rect")
 					.attr("class", "barras " + "numero" + ramos2[d])
 					.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
-					.attr("y", yScale(y0[element.year] + element.valor))
-					.attr("fill", paleta[element.major])
-					.attr("height", height - yScale(element.valor))
+					.attr("y", height)
 					.attr("width", 80/grafics.length)
-					.attr("stroke", "black")
-					.attr("stroke-width", 1)
-					.attr("stroke-opacity", 0)
+					.attr("height", 0)
 					.on("mouseover", function() {
 						d3.select(this)
 							.attr("stroke-opacity", 1);
@@ -312,13 +345,32 @@ function anadir() {
 							.attr("style", "font-size: 10")
 							.style("text-anchor", "left")
 							.text(element.valor);
+						tooltip.transition()
+		                    .duration(300)
+		                    .style("opacity", 1);
+
+		                    tooltip
+		                    .style("left", (d3.event.pageX + 10) + "px")
+		                    .style("top", (d3.event.pageY + 10) + "px")
+		                    .html(element.major +  "<br>" + "Alumnos: " + element.valor
+		                     + "<br>" + "Total Año: " + total(element.year, d))
 					})
 					.on("mouseout", function() {
+						tooltip
+	    	  				.style("opacity", 0)
+
 						d3.select(this)
 							.attr("stroke-opacity", 0);
 						
 						svg.selectAll(".major").remove()
-					});
+					})
+					.transition()
+					.attr("y", yScale(y0[element.year] + element.valor))
+					.attr("fill", paleta[element.major])
+					.attr("height", height - yScale(element.valor))
+					.attr("stroke", "black")
+					.attr("stroke-width", 1)
+					.attr("stroke-opacity", 0)
 				y0[element.year] += element.valor;
 			};
 		});
@@ -333,6 +385,7 @@ function anadir() {
 			.on("click", quitar)
 			.attr("class", "button");
 };
+
 
 function quitar() {
 	// Quitar barras
@@ -355,23 +408,23 @@ function quitar() {
 
 	// cambiar graficos existentes
 	grafics.forEach((d,i) => {
-		svg.selectAll(".numero" + ramos2[d]).remove();
+
+		svg.selectAll(".numero" + ramos2[d])
+	    .attr("y", height)
+	    .attr("height", 0)
+		.remove();
 		simbolos[d].forEach(element => {
 			if(element.valor > 0 ) {
 				svg.append("rect")
 					.attr("class", "barras " + "numero" + ramos2[d])
 					.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
-					.attr("y", yScale(y0[element.year] + element.valor))
-					.attr("fill", paleta[element.major])
-					.attr("height", height - yScale(element.valor))
+					.attr("y", height)
+					.attr("height", 0)
 					.attr("width", 80/grafics.length)
-					.attr("stroke", "black")
-					.attr("stroke-width", 2)
-					.attr("stroke-opacity", 0)
 					.on("mouseover", function() {
 						d3.select(this)
 							.attr("stroke-opacity", 1);
-						
+
 						svg.append("text")
 							.attr("class", "major" )
 							.attr("y", 50)
@@ -379,7 +432,7 @@ function quitar() {
 							.attr("dy", "1em")
 							.attr("style", "font-size: 10")
 							.style("text-anchor", "left")
-							.text(d+":");
+							.text(d + ":");
 						
 						svg.append("text")
 							.attr("class", "major" )
@@ -398,13 +451,33 @@ function quitar() {
 							.attr("style", "font-size: 10")
 							.style("text-anchor", "left")
 							.text(element.valor);
+						tooltip.transition()
+		                    .duration(300)
+		                    .style("opacity", 1);
+
+		                    tooltip
+		                    .style("left", (d3.event.pageX + 10) + "px")
+		                    .style("top", (d3.event.pageY + 10) + "px")
+		                    .html(element.major +  "<br>" + "Alumnos: " + element.valor
+		                     + "<br>" + "Total Año: " + total(element.year, d))
 					})
 					.on("mouseout", function() {
+						tooltip
+	    	  				.style("opacity", 0)
+	    	  				
 						d3.select(this)
 							.attr("stroke-opacity", 0);
 						
 						svg.selectAll(".major").remove()
-					});
+					})
+					.transition(t)
+					.attr("y", yScale(y0[element.year] + element.valor))
+					.attr("fill", paleta[element.major])
+					.attr("height", height - yScale(element.valor))
+					.attr("stroke", "black")
+					.attr("stroke-width", 2)
+					.attr("stroke-opacity", 0)
+					
 				y0[element.year] += element.valor;
 			};
 		})
