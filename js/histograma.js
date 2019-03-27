@@ -94,7 +94,12 @@ for(let i = 2013; i <= 2018; i++) {
 var t = d3.transition()
             .duration(800);
 
+var filtro_anos = ["2013", "2014", "2015", "2016", "2017"]
 var grafics = ["Matemáticas Discretas"];
+var optativos = true;
+var major = true;
+var minor = true;
+var resto = true;
 
 d3.csv("data/Datos_programacion.csv").then(dataset => {
 	eso = d3.nest()
@@ -103,6 +108,13 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 	eso.forEach((d, i) => {
 		paleta[d.key] = colores[i];
 	});
+
+	paleta["Major en Computación e Ingeniería de Software - Track Tecnologías de la Información"] = "#1b9e77";
+	paleta["Major en Ingeniería Matemática - Track 1: Fundamentos de Optimización"] = "#ff7f0e";
+	paleta["Major en Computación e Ingeniería de Software - Track Computación"] = "#7fc97f";
+	paleta["Minor de Profundidad en Automatización e Inteligencia Computacional - Área 2: Inteligencia Computacional"] = "#d62728";
+	paleta["Minor de Profundidad Articulación Ingeniería de Transporte - Área 4: Profundización en Ingeniería de Transporte"] = "#fb8072";
+
   	symbols = d3.nest()
 		.key(function(d) {return d["RAMO"]})
 		.key(function(d) {return d["BLOQUE ACADÉMICO"]})
@@ -154,16 +166,52 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 				.append('option')
 					.attr('value', function(d) {return d.text})
 					.text(function (d) {return d.text});
+	
+	d3.select("body").append("br");				
+	var filtro = d3.select("body")
+					.append("div")
+	
+	for(let i = 2013; i < 2018; i++) {
+		filtro.append("button")
+				.text("" + i)
+				.attr("class", "filtro")
+				.style("background-color", "rgb(103, 255, 1)")
+				.on("click", filtrar_anos);
+		
+	};
+	filtro.append("button")
+				.text("Optativos")
+				.attr("class", "filtro")
+				.style("background-color", "rgb(103, 255, 1)")
+				.on("click", filtrar_optativos);
+
+	filtro.append("button")
+				.text("Major")
+				.attr("class", "filtro")
+				.style("background-color", "rgb(103, 255, 1)")
+				.on("click", filtrar_major);
+
+	filtro.append("button")
+				.text("Minor")
+				.attr("class", "filtro")
+				.style("background-color", "rgb(103, 255, 1)")
+				.on("click", filtrar_minor);
+
+	filtro.append("button")
+				.text("Titulo o extras")
+				.attr("class", "filtro")
+				.style("background-color", "rgb(103, 255, 1)")
+				.on("click", filtrar_resto);
 
 	symbols.forEach(d => {
 		let total = [];
 		for(let i = 2013; i <= 2018; i++) {
 			d.values.forEach(element => {
 				if(element.value[i] != "") {
-					total.push({year: i, major: element.key, valor: parseInt(element.value[i])});
+					total.push({year: i, major: element.key, valor: parseInt(element.value[i]), tipo: element.value["TCurso"].includes("Optativo")});
 				}
 				else {
-					total.push({year: i, major: element.key, valor: 0});
+					total.push({year: i, major: element.key, valor: 0, tipo: element.value["TCurso"].includes("Optativo")});
 				}
 			});
 		};
@@ -208,12 +256,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 				.on("mouseover", function() {
 					d3.select(this)
 						.attr("stroke-opacity", 1);
-
-					svg.append("circle")
-						.attr("r", 3)
-						.attr("x", width + 5)
-						.attr("y", 70)
-
+  
 					svg.append("text")
 						.attr("class", "major" )
 						.attr("y", 50)
@@ -279,15 +322,75 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 	};
 });
 
-function total(ano, ramo) {
-	a = 0
-	cantidad[ramo].forEach(function(d){
-		if (d.x == ano){
-			a = d.y;
-		}
+
+function poner_grafico() {
+	grafics.forEach((d,i) => {
+		svg.selectAll(".numero" + ramos2[d]).remove();
+		simbolos[d].forEach(element => {
+			if(element.valor > 0) {
+				if (optativos || !(element.tipo)) {
+					if (major || !(element.major.includes("Major"))) {
+						if (minor || !(element.major.includes("Minor"))) {
+							if (resto || element.major.includes("Major") || element.major.includes("Minor")) {
+								svg.append("rect")
+									.attr("class", "barras " + "numero" + ramos2[d])
+									.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
+									.attr("y", yScale(y0[element.year] + element.valor))
+									.attr("fill", paleta[element.major])
+									.attr("height", height - yScale(element.valor))
+									.attr("width", 80/grafics.length)
+									.attr("stroke", "black")
+									.attr("stroke-width", 1)
+									.attr("stroke-opacity", 0)
+									.on("mouseover", function() {
+										d3.select(this)
+											.attr("stroke-opacity", 1);
+
+										svg.append("text")
+											.attr("class", "major" )
+											.attr("y", 50)
+											.attr("x", width + 10)
+											.attr("dy", "1em")
+											.attr("style", "font-size: 10")
+											.style("text-anchor", "left")
+											.text(d + ":");
+										
+										svg.append("text")
+											.attr("class", "major" )
+											.attr("y", 70)
+											.attr("x", width + 10)
+											.attr("dy", "1em")
+											.attr("style", "font-size: 10")
+											.style("text-anchor", "left")
+											.text(element.major);
+
+										svg.append("text")
+											.attr("class", "major" )
+											.attr("y", 90)
+											.attr("x", width + 10)
+											.attr("dy", "1em")
+											.attr("style", "font-size: 10")
+											.style("text-anchor", "left")
+											.text(element.valor);
+									})
+									.on("mouseout", function() {
+										d3.select(this)
+											.attr("stroke-opacity", 0);
+										
+										svg.selectAll(".major").remove()
+									});
+								y0[element.year] += element.valor;
+							};
+						};
+					};
+				};
+			};
+		});
+		for(let i = 2013; i <= 2018; i++) {
+			y0[i] = 0;
+		};
 	})
-	return a
-	}
+};
 
 function anadir() {
 	// anadir ramo al grafico
@@ -303,81 +406,7 @@ function anadir() {
 	yAxis.transition().call(yGen);
 
 	// Poner barras nuevas y cambiar antiguas;
-	grafics.forEach((d,i) => {
-		if(i < grafics.length - 1) {
-			svg.selectAll(".numero" + ramos2[d]).remove();
-		};
-		simbolos[d].forEach(element => {
-			if(element.valor > 0 ) {
-				svg.append("rect")
-					.attr("class", "barras " + "numero" + ramos2[d])
-					.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
-					.attr("y", height)
-					.attr("width", 80/grafics.length)
-					.attr("height", 0)
-					.on("mouseover", function() {
-						d3.select(this)
-							.attr("stroke-opacity", 1);
-
-						svg.append("text")
-							.attr("class", "major" )
-							.attr("y", 50)
-							.attr("x", width + 10)
-							.attr("dy", "1em")
-							.attr("style", "font-size: 10")
-							.style("text-anchor", "left")
-							.text(d + ":");
-						
-						svg.append("text")
-							.attr("class", "major" )
-							.attr("y", 70)
-							.attr("x", width + 10)
-							.attr("dy", "1em")
-							.attr("style", "font-size: 10")
-							.style("text-anchor", "left")
-							.text(element.major);
-
-						svg.append("text")
-							.attr("class", "major" )
-							.attr("y", 90)
-							.attr("x", width + 10)
-							.attr("dy", "1em")
-							.attr("style", "font-size: 10")
-							.style("text-anchor", "left")
-							.text(element.valor);
-						tooltip.transition()
-		                    .duration(300)
-		                    .style("opacity", 1);
-
-		                    tooltip
-		                    .style("left", (d3.event.pageX + 10) + "px")
-		                    .style("top", (d3.event.pageY + 10) + "px")
-		                    .html(element.major +  "<br>" + "Alumnos: " + element.valor
-		                     + "<br>" + "Total Año: " + total(element.year, d))
-					})
-					.on("mouseout", function() {
-						tooltip
-	    	  				.style("opacity", 0)
-
-						d3.select(this)
-							.attr("stroke-opacity", 0);
-						
-						svg.selectAll(".major").remove()
-					})
-					.transition()
-					.attr("y", yScale(y0[element.year] + element.valor))
-					.attr("fill", paleta[element.major])
-					.attr("height", height - yScale(element.valor))
-					.attr("stroke", "black")
-					.attr("stroke-width", 1)
-					.attr("stroke-opacity", 0)
-				y0[element.year] += element.valor;
-			};
-		});
-		for(let i = 2013; i <= 2018; i++) {
-			y0[i] = 0;
-		};
-	})
+	poner_grafico();
 	
 	// anadir boton
 	botones.append("button")
@@ -407,90 +436,92 @@ function quitar() {
 	yAxis.transition().call(yGen);
 
 	// cambiar graficos existentes
-	grafics.forEach((d,i) => {
-
-		svg.selectAll(".numero" + ramos2[d])
-	    .attr("y", height)
-	    .attr("height", 0)
-		.remove();
-		simbolos[d].forEach(element => {
-			if(element.valor > 0 ) {
-				svg.append("rect")
-					.attr("class", "barras " + "numero" + ramos2[d])
-					.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
-					.attr("y", height)
-					.attr("height", 0)
-					.attr("width", 80/grafics.length)
-					.on("mouseover", function() {
-						d3.select(this)
-							.attr("stroke-opacity", 1);
-
-						svg.append("text")
-							.attr("class", "major" )
-							.attr("y", 50)
-							.attr("x", width + 10)
-							.attr("dy", "1em")
-							.attr("style", "font-size: 10")
-							.style("text-anchor", "left")
-							.text(d + ":");
-						
-						svg.append("text")
-							.attr("class", "major" )
-							.attr("y", 70)
-							.attr("x", width + 10)
-							.attr("dy", "1em")
-							.attr("style", "font-size: 10")
-							.style("text-anchor", "left")
-							.text(element.major);
-
-						svg.append("text")
-							.attr("class", "major" )
-							.attr("y", 90)
-							.attr("x", width + 10)
-							.attr("dy", "1em")
-							.attr("style", "font-size: 10")
-							.style("text-anchor", "left")
-							.text(element.valor);
-						tooltip.transition()
-		                    .duration(300)
-		                    .style("opacity", 1);
-
-		                    tooltip
-		                    .style("left", (d3.event.pageX + 10) + "px")
-		                    .style("top", (d3.event.pageY + 10) + "px")
-		                    .html(element.major +  "<br>" + "Alumnos: " + element.valor
-		                     + "<br>" + "Total Año: " + total(element.year, d))
-					})
-					.on("mouseout", function() {
-						tooltip
-	    	  				.style("opacity", 0)
-	    	  				
-						d3.select(this)
-							.attr("stroke-opacity", 0);
-						
-						svg.selectAll(".major").remove()
-					})
-					.transition(t)
-					.attr("y", yScale(y0[element.year] + element.valor))
-					.attr("fill", paleta[element.major])
-					.attr("height", height - yScale(element.valor))
-					.attr("stroke", "black")
-					.attr("stroke-width", 2)
-					.attr("stroke-opacity", 0)
-					
-				y0[element.year] += element.valor;
-			};
-		})
-		for(let i = 2013; i <= 2018; i++) {
-			y0[i] = 0;
-		};
-	});
+	poner_grafico();
 
 	yScale0.domain([0, 1.05*mayor]);
 
 	// quitar el boton
 	d3.select(this).remove();
 
+};
+
+function sumar_todos(total, num) {
+	return total + num.valor;
+};
+
+function calcular_total() {
+	for (var ramo in simbolos) {
+		simbolos[ramo].forEach(d => {
+			if(d.year == (2018 + "")){
+				sumar = simbolos[ramo].filter(element => {
+					return (filtro_anos.indexOf(element.year+"") >= 0 && element.major == d.major);
+				});
+				d.valor = sumar.reduce(sumar_todos, 0);
+			};
+		});
+	};
+	poner_grafico();
+};
+
+function filtrar_anos() {
+	let index = filtro_anos.indexOf(this.textContent);
+	if (index >= 0) {
+		d3.select(this).style("background-color", "rgb(244, 91, 83)");
+		filtro_anos.splice(index, 1);
+	}
+	else {
+		d3.select(this).style("background-color", "rgb(103, 255, 1)")
+		filtro_anos.push(this.textContent)
+	}
+	calcular_total()
+};
+
+function filtrar_optativos() {
+	if (optativos) {
+		d3.select(this).style("background-color", "rgb(244, 91, 83)");
+		optativos = false;
+	}
+	else {
+		d3.select(this).style("background-color", "rgb(103, 255, 1)");
+		optativos = true;
+	}
+	poner_grafico();
+};
+
+function filtrar_major() {
+	if (major) {
+		d3.select(this).style("background-color", "rgb(244, 91, 83)");
+		major = false;
+	}
+	else {
+		d3.select(this).style("background-color", "rgb(103, 255, 1)");
+		major = true;
+	}
+	poner_grafico();
+};
+
+function filtrar_minor() {
+	if (minor) {
+		d3.select(this).style("background-color", "rgb(244, 91, 83)");
+		minor = false;
+	}
+	else {
+		d3.select(this).style("background-color", "rgb(103, 255, 1)");
+		minor = true;
+	};
+	poner_grafico();
+};
+
+function filtrar_resto() {
+	if (resto) {
+		d3.select(this).style("background-color", "rgb(244, 91, 83)");
+		resto = false;
+	}
+	else {
+		d3.select(this).style("background-color", "rgb(103, 255, 1)");
+		resto = true;
+	}
+	poner_grafico();
 };
 
 // function zoomed() {
