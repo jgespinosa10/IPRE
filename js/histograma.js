@@ -8,7 +8,7 @@ const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
 
 var symbols = 0;
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#Cajon").append("svg")
 			.attr("height", HEIGHT)
 			.attr("width", WIDTH)
 			.append("g")
@@ -58,7 +58,7 @@ var	Xlabel = svg.append("text")
 var	tooltip = d3.select("body").append("div")
 	                .style("position", "absolute")
 	                .attr("class", "tooltip")
-	                .style("left", "50px")
+	                .style("left", "70px")
 	                .style("top", "50px")
 	                .style("opacity", 0);
 
@@ -134,7 +134,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 		ramos2[element.key] = i;
 	});
 
-	botones = d3.select("body")
+	botones = d3.select("#Botones")
 					.append("div");
 	
 	botones.append("button")
@@ -142,24 +142,11 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			.on("click", quitar)
 			.attr("class", "button ");
 
-	d3.select("body")
-		.append("br")
-
-	select = d3.select("body")
-				.append("div")
-				.attr("class", "input-group-prepend");
-
-	select.append("label")
-			.attr("for", "Select")
-			.text("Selecciona ramo")
-			.attr("class", "input-group-text");
-
-	select.append("select")
-			.attr("id", "Select")
-			.attr("class", "custom-select");
-
-	var input = d3.select("#Select")
+	var input = d3.select("#Complete")
 					.on('change', anadir)
+
+
+		datalist = d3.select("#Select")			
 				.selectAll('option')
 					.data(ramos)
 					.enter()
@@ -168,7 +155,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 					.text(function (d) {return d.text});
 	
 	d3.select("body").append("br");				
-	var filtro = d3.select("body")
+	var filtro = d3.select("#Filtros")
 					.append("div")
 	
 	for(let i = 2013; i < 2018; i++) {
@@ -334,11 +321,11 @@ function poner_grafico() {
 							if (resto || element.major.includes("Major") || element.major.includes("Minor")) {
 								svg.append("rect")
 									.attr("class", "barras " + "numero" + ramos2[d])
+									.attr("class", "barras " + "numero" + ramos2[d])
 									.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
-									.attr("y", yScale(y0[element.year] + element.valor))
-									.attr("fill", paleta[element.major])
-									.attr("height", height - yScale(element.valor))
+									.attr("y", height)
 									.attr("width", 80/grafics.length)
+									.attr("height", 0)
 									.attr("stroke", "black")
 									.attr("stroke-width", 1)
 									.attr("stroke-opacity", 0)
@@ -372,13 +359,33 @@ function poner_grafico() {
 											.attr("style", "font-size: 10")
 											.style("text-anchor", "left")
 											.text(element.valor);
+										tooltip.transition()
+					                    .duration(300)
+					                    .style("opacity", 1);
+
+					                    tooltip
+					                    .style("left", (d3.event.pageX + 10) + "px")
+					                    .style("top", (d3.event.pageY + 10) + "px")
+					                    .html(element.major +  "<br>" + "Alumnos: " + element.valor
+					                     + "<br>" + "Total Año: " + total(element.year, d))
 									})
 									.on("mouseout", function() {
 										d3.select(this)
 											.attr("stroke-opacity", 0);
 										
 										svg.selectAll(".major").remove()
-									});
+										tooltip
+	    	  								.style("opacity", 0)
+									})
+									.on("mousemove", function(d) {
+									tooltip
+								      .style("left", (d3.event.pageX + 10) + "px")
+								      .style("top", (d3.event.pageY - 30) + "px")})
+									.transition()
+									.attr("y", yScale(y0[element.year] + element.valor))
+									.attr("fill", paleta[element.major])
+									.attr("height", height - yScale(element.valor))
+									.attr("width", 80/grafics.length);
 								y0[element.year] += element.valor;
 							};
 						};
@@ -523,6 +530,16 @@ function filtrar_resto() {
 	}
 	poner_grafico();
 };
+
+function total(ano, ramo) {
+	a = 0
+	cantidad[ramo].forEach(function(d){
+		if (d.x == ano){
+			a = d.y;
+		}
+	})
+	return a
+	};
 
 // function zoomed() {
 // 	view.attr("transform", d3.event.transform);
