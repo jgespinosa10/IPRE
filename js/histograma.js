@@ -14,9 +14,10 @@ var svg = d3.select("#Cajon").append("svg")
 			.append("g")
 			.attr("transform", "translate("+ MARGIN.LEFT + "," + MARGIN.TOP + ")");
 
-var xScale = d3.scaleLinear()
+var xScale = d3.scaleBand()
+				.domain([2013, 2014, 2015, 2016, 2017, "Total"])
 				.range([0, width])
-				.domain([2012.5 , 2018.5]);
+				.paddingInner(0.05);
 var yScale = d3.scaleLinear()
 				.range([height, 0]);
 
@@ -143,9 +144,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			.attr("class", "button ");
 
 	var input = d3.select("#Complete")
-					.on('change', anadir)
-
-
+					.on('change', cambiar)				
 		datalist = d3.select("#Select")			
 				.selectAll('option')
 					.data(ramos)
@@ -236,40 +235,18 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 		if(d.valor > 0 ) {
 			svg.append("rect")
 				.attr("class", "barras " + "numero" + ramos2["Matemáticas Discretas"])
-				.attr("x", (xScale(d.year) - 40))
+				.attr("x", (function() {
+					if(d.year == "2018"){
+						return xScale("Total") + 8
+				}else{
+					return xScale(d.year) + 8
+				}}))
 				.attr("y", height)
 				.attr("height", 0)
 				.attr("width", 80)
 				.on("mouseover", function() {
 					d3.select(this)
 						.attr("stroke-opacity", 1);
-  
-					svg.append("text")
-						.attr("class", "major" )
-						.attr("y", 50)
-						.attr("x", width + 10)
-						.attr("dy", "1em")
-						.attr("style", "font-size: 10")
-						.style("text-anchor", "left")
-						.text("Matemáticas Discretas:");
-
-					svg.append("text")
-						.attr("class", "major" )
-						.attr("y", 70)
-						.attr("x", width + 10)
-						.attr("dy", "1em")
-						.attr("style", "font-size: 10")
-						.style("text-anchor", "left")
-						.text(d.major);
-
-					svg.append("text")
-						.attr("class", "major" )
-						.attr("y", 90)
-						.attr("x", width + 10)
-						.attr("dy", "1em")
-						.attr("style", "font-size: 10")
-						.style("text-anchor", "left")
-						.text(d.valor);
 
 					tooltip.transition()
                     .duration(300)
@@ -322,7 +299,13 @@ function poner_grafico() {
 								svg.append("rect")
 									.attr("class", "barras " + "numero" + ramos2[d])
 									.attr("class", "barras " + "numero" + ramos2[d])
-									.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))
+									.attr("x", (function() {
+										if(element.year == "2018"){
+											return xScale("Total") + (80/grafics.length)*(i) + 8
+									}else{
+										return xScale(element.year) + (80/grafics.length)*(i) + 8
+									}}))
+									/*.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))*/
 									.attr("y", height)
 									.attr("width", 80/grafics.length)
 									.attr("height", 0)
@@ -332,33 +315,6 @@ function poner_grafico() {
 									.on("mouseover", function() {
 										d3.select(this)
 											.attr("stroke-opacity", 1);
-
-										svg.append("text")
-											.attr("class", "major" )
-											.attr("y", 50)
-											.attr("x", width + 10)
-											.attr("dy", "1em")
-											.attr("style", "font-size: 10")
-											.style("text-anchor", "left")
-											.text(d + ":");
-										
-										svg.append("text")
-											.attr("class", "major" )
-											.attr("y", 70)
-											.attr("x", width + 10)
-											.attr("dy", "1em")
-											.attr("style", "font-size: 10")
-											.style("text-anchor", "left")
-											.text(element.major);
-
-										svg.append("text")
-											.attr("class", "major" )
-											.attr("y", 90)
-											.attr("x", width + 10)
-											.attr("dy", "1em")
-											.attr("style", "font-size: 10")
-											.style("text-anchor", "left")
-											.text(element.valor);
 										tooltip.transition()
 					                    .duration(300)
 					                    .style("opacity", 1);
@@ -398,10 +354,15 @@ function poner_grafico() {
 		};
 	})
 };
-
-function anadir() {
+function cambiar() {
+	if(ramos2[this.value])
+		{anadir(this.value)}
+	else{
+	}
+}
+function anadir(ramo) {
 	// anadir ramo al grafico
-	grafics.push(this.value);
+	grafics.push(ramo);
 
 	// Cambiar axis
 	let mayor = 0
@@ -417,7 +378,7 @@ function anadir() {
 	
 	// anadir boton
 	botones.append("button")
-			.text(this.value)
+			.text(ramo)
 			.on("click", quitar)
 			.attr("class", "button");
 };
