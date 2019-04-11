@@ -72,12 +72,22 @@ var colors = d3.scaleOrdinal(d3.schemeCategory10);
 var legendw = width + 30;
 var legendh = height*2/3 + 10;
 
-var colores = d3.schemeCategory10;
-colores = colores.concat(d3.schemeAccent);
-colores = colores.concat(d3.schemeDark2);
-colores = colores.concat(d3.schemePaired);
-colores = colores.concat(d3.schemeSet1);
-colores = colores.concat(d3.schemeSet2);
+var colores = d3.schemeReds[4];
+colores = colores.concat(d3.schemeBlues[5]);
+colores = colores.concat(d3.schemeGreens[6]);
+colores = colores.concat(d3.schemePurples[8]);
+colores = colores.concat(d3.schemeOranges[5]);
+colores = colores.concat(d3.schemeGreys[8]);
+colores = colores.concat(d3.schemeBrBG[7]);
+colores.push("#f760d0");
+colores.push("#cf2c91");
+colores.push("#a200ff");
+colores.push("#bcbd22");
+colores.push("#5e5563");
+colores.push("#810909");
+colores.push("#d57e7e");
+colores.push("#9d2020");
+colores.push("#a56e6e");
 
 var eso = 0;
 
@@ -106,14 +116,12 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 				.key(function(d) {return d["BLOQUE ACADÉMICO"]})
 				.entries(dataset);
 	eso.forEach((d, i) => {
+		if( i >= 0)//4 + 5 + 6 + 8 + 5 + 8 + 7 + 2)
+		{
+			console.log(d.key, colores[i]);
+		};
 		paleta[d.key] = colores[i];
 	});
-
-	paleta["Major en Computación e Ingeniería de Software - Track Tecnologías de la Información"] = "#1b9e77";
-	paleta["Major en Ingeniería Matemática - Track 1: Fundamentos de Optimización"] = "#ff7f0e";
-	paleta["Major en Computación e Ingeniería de Software - Track Computación"] = "#7fc97f";
-	paleta["Minor de Profundidad en Automatización e Inteligencia Computacional - Área 2: Inteligencia Computacional"] = "#d62728";
-	paleta["Minor de Profundidad Articulación Ingeniería de Transporte - Área 4: Profundización en Ingeniería de Transporte"] = "#fb8072";
 
   	symbols = d3.nest()
 		.key(function(d) {return d["RAMO"]})
@@ -432,7 +440,6 @@ function quitar() {
 	if (index > -1) {
 		grafics.splice(index, 1);
 	};
-
 	// Cambiar axis
 	let mayor = 0
 	grafics.forEach(d => {
@@ -441,15 +448,11 @@ function quitar() {
 	});
 	yScale.domain([0, 1.05*mayor]);
 	yAxis.transition().call(yGen);
-
 	// cambiar graficos existentes
 	poner_grafico();
-
 	yScale0.domain([0, 1.05*mayor]);
-
 	// quitar el boton
 	d3.select(this).remove();
-
 };
 
 function sumar_todos(total, num) {
