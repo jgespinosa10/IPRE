@@ -124,6 +124,8 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 		paleta[d.key] = colores[i];
 	});
 
+	paleta["Minor de Profundidad en Fundamentos Científicos y Tecnológicos de la Computación"] = "#cbc9c9";
+
   	symbols = d3.nest()
 		.key(function(d) {return d["RAMO"]})
 		.key(function(d) {return d["BLOQUE ACADÉMICO"]})
