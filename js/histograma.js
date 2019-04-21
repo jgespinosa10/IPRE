@@ -1,7 +1,7 @@
 
-const WIDTH = 1300;
+const WIDTH = 1400;
 const HEIGHT = 500;
-const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 650 };
+const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 750 };
 
 const width = WIDTH - MARGIN.RIGHT - MARGIN.LEFT;
 const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
@@ -70,9 +70,6 @@ var	tooltip = d3.select("body").append("div")
 
 var colors = d3.scaleOrdinal(d3.schemeCategory10);
 
-var legendw = width + 30;
-var legendh = height*2/3 + 10;
-
 var colores = d3.schemeReds[4];
 colores = colores.concat(d3.schemeBlues[5]);
 colores = colores.concat(d3.schemeGreens[6]);
@@ -117,10 +114,6 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 				.key(function(d) {return d["BLOQUE ACADÉMICO"]})
 				.entries(dataset);
 	eso.forEach((d, i) => {
-		if( i >= 0)//4 + 5 + 6 + 8 + 5 + 8 + 7 + 2)
-		{
-			console.log(d.key, colores[i]);
-		};
 		paleta[d.key] = colores[i];
 	});
 
