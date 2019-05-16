@@ -8,35 +8,47 @@ const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
 
 var symbols = 0;
 
+// Establecemos donde estará el histograma
 var svg = d3.select("#Cajon").append("svg")
 			.attr("height", HEIGHT)
 			.attr("width", WIDTH)
 			.append("g")
 			.attr("transform", "translate("+ MARGIN.LEFT + "," + MARGIN.TOP + ")");
 
+// Establecemos la escala
 var xScale = d3.scaleBand()
 				.domain([2013, 2014, 2015, 2016, 2017, "Total"])
 				.range([0, width])
 				.paddingInner(0.05);
+
+// Escala de eje Y principal
 var yScale = d3.scaleLinear()
 				.range([height, 0]);
 
+// Escala de eje Y anterior (Para poder realizar ajustes de eje)
 var yScale0 = d3.scaleLinear()
 				.range([height, 0]);
 
+// Eje X
 var xGen = d3.axisBottom(xScale)
 				.ticks(7);
+
+// Eje Y
 var yGen = d3.axisLeft(yScale)
 				.ticks(7);
 
+// Axis X
 var xAxis = svg.append("g")
 				.attr("class", "x-axis")
 				.attr("transform", "translate(0," + height + ")")
 				.call(xGen);
+
+// Axis Y
 var yAxis = svg.append("g")
 				.attr("class", "y-axis")
 				.call(yGen);
 
+// Label eje Y
 var Ylabel = svg.append("text")
 				.attr("class", "label-y")
 				.attr("transform", "rotate(-90)")
@@ -47,6 +59,7 @@ var Ylabel = svg.append("text")
 				.style("text-anchor", "middle")
 				.text("Alumnos");
 
+// Label eje X
 var	Xlabel = svg.append("text")
 				.attr("class", "label-x")
 				.attr("transform",
@@ -56,6 +69,7 @@ var	Xlabel = svg.append("text")
 				.style("text-anchor", "middle")
 				.text("generación");
 
+// Para Mouseover
 var	tooltip = d3.select("body").append("div")
 	                .style("position", "absolute")
 	                .attr("class", "tooltip")
@@ -63,11 +77,8 @@ var	tooltip = d3.select("body").append("div")
 	                .style("top", "50px")
 	                .style("opacity", 0);
 
-// anadir zoom
-// var zoom = d3.zoom()
-//     .scaleExtent([1, 40])
-//     .on("zoom", zoomed);
 
+// Escala de colores, para añadir más es necesario concatenar colores a la lista
 var colors = d3.scaleOrdinal(d3.schemeCategory10);
 
 var colores = d3.schemeReds[4];
@@ -87,6 +98,7 @@ colores.push("#d57e7e");
 colores.push("#9d2020");
 colores.push("#a56e6e");
 
+// Variables para funciones
 var eso = 0;
 
 var botones = 0;
@@ -109,6 +121,8 @@ var major = true;
 var minor = true;
 var resto = true;
 
+
+// Leer los datos y crear primer gráfico
 d3.csv("data/Datos_programacion.csv").then(dataset => {
 	eso = d3.nest()
 				.key(function(d) {return d["BLOQUE ACADÉMICO"]})
