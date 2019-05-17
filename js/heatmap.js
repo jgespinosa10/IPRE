@@ -34,6 +34,8 @@ var color = d3.interpolateYlOrRd
 var ano20182 = [],
     ano20191 = [];
 
+var maxRow = 5;
+
 // parámetros leyenda
 var legendFullHeight = height;
 var legendFullWidth = 50;
@@ -46,6 +48,18 @@ var legendSvg = svg2
                 .append('g')
                 .attr('transform', 'translate(' + (width + legendMargin.left) + ',' +
                         legendMargin.top + ')');
+
+var legendscale = d3.scaleLinear()
+            .domain([0, maxRow])
+            .range([0, legendheight]);
+// Eje X
+var legendGen = d3.axisRight(legendscale)
+                .ticks(maxRow);
+
+var legendAxis = svg.append("g")
+				.attr("class", "y-axis")
+				.attr("transform", "translate(" + (MARGIN2.LEFT + 585) + "," + legendMargin.top + ")")
+				.call(legendGen);
 
 var linearGradient = svg.append("defs")
                     .append("linearGradient")
@@ -170,8 +184,13 @@ d3.csv("data/20182.csv").then(dataset1 => {
                 final.push([d, f, valores[d][f]])
             })
         })
-        var maxRow = Math.max.apply(Math, final.map(function (i) {
+        maxRow = Math.max.apply(Math, final.map(function (i) {
                                     return i[2];}));
+        
+        legendscale.domain([0, maxRow]);
+        legendGen.ticks(maxRow);
+        legendAxis.call(legendGen);
+        
         svg2.selectAll()
             .data(final)
             .enter()
@@ -180,6 +199,6 @@ d3.csv("data/20182.csv").then(dataset1 => {
             .attr("y", function(d) { return y(d[1]) })
             .attr("width", x.bandwidth() )
             .attr("height", y.bandwidth() )
-            .style("fill", function(d) { return color(d[2]/9)} );
+            .style("fill", function(d) { return color(d[2]/maxRow)} );
     });
 });
