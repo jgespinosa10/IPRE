@@ -1,5 +1,4 @@
-
-const MARGIN2 = { TOP: 20, BOTTOM: 40, LEFT: 750, RIGHT: 50 };
+const MARGIN2 = { TOP: 20, BOTTOM: 40, LEFT: 750, RIGHT: 70 };
 
 var svg2 = d3.select("#Cajon").select("svg")
         .append("g")
@@ -34,10 +33,46 @@ var color = d3.interpolateYlOrRd
 
 var ano20182 = [],
     ano20191 = [];
-//Read the data
+
+// parámetros leyenda
 var legendFullHeight = height;
 var legendFullWidth = 50;
+var legendMargin = { top: 20, bottom: 20, left: 10, right: 20 };
 
+var legendheight = legendFullHeight - legendMargin.top - legendMargin.right;
+var legendwidth = legendFullWidth - legendMargin.left - legendMargin.right;
+// leyenda
+var legendSvg = svg2
+                .append('g')
+                .attr('transform', 'translate(' + (width + legendMargin.left) + ',' +
+                        legendMargin.top + ')');
+
+var linearGradient = svg.append("defs")
+                    .append("linearGradient")
+                    .attr("id", "linear-gradient")
+                    .attr("gradientTransform", "rotate(90)");
+                    
+linearGradient.append("stop")
+                .attr("offset", "0%")
+                .attr("stop-color", color(0));
+        
+linearGradient.append("stop")
+                .attr("offset", "50%")
+                .attr("stop-color", color(0.5));
+        
+linearGradient.append("stop")
+                .attr("offset", "100%")
+                .attr("stop-color", color(1));
+
+
+legendSvg.append('rect')
+                        .attr('x1', 0)
+                        .attr('y1', 0)
+                        .attr('width', legendwidth)
+                        .attr('height', legendheight)
+                        .style('fill', "url(#linear-gradient)");
+
+//Read the data
 d3.csv("data/20182.csv").then(dataset1 => {
     d3.csv("data/20191.csv").then(dataset2 => {
         dataset1.forEach(d => {
