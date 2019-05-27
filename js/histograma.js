@@ -1,54 +1,47 @@
-
-const WIDTH = 1400;
+const WIDTH = 1300;
 const HEIGHT = 500;
-const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 750 };
+const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 650 };
 
 const width = WIDTH - MARGIN.RIGHT - MARGIN.LEFT;
 const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
 
 var symbols = 0;
 
-// Establecemos donde estará el histograma
+var inas = 5
+
 var svg = d3.select("#Cajon").append("svg")
 			.attr("height", HEIGHT)
 			.attr("width", WIDTH)
 			.append("g")
 			.attr("transform", "translate("+ MARGIN.LEFT + "," + MARGIN.TOP + ")");
 
-// Establecemos la escala
 var xScale = d3.scaleBand()
 				.domain([2013, 2014, 2015, 2016, 2017, "Total"])
 				.range([0, width])
-				.paddingInner(0.05);
+				.paddingInner(0.5)
+				.paddingOuter(0.5)
+				.padding(0.5)
+				.align(0.5)
 
-// Escala de eje Y principal
 var yScale = d3.scaleLinear()
 				.range([height, 0]);
 
-// Escala de eje Y anterior (Para poder realizar ajustes de eje)
 var yScale0 = d3.scaleLinear()
 				.range([height, 0]);
 
-// Eje X
 var xGen = d3.axisBottom(xScale)
-				.ticks(7);
-
-// Eje Y
+				.ticks(3);
 var yGen = d3.axisLeft(yScale)
-				.ticks(7);
+				.ticks(6);
 
-// Axis X
 var xAxis = svg.append("g")
 				.attr("class", "x-axis")
 				.attr("transform", "translate(0," + height + ")")
 				.call(xGen);
-
-// Axis Y
 var yAxis = svg.append("g")
 				.attr("class", "y-axis")
 				.call(yGen);
 
-// Label eje Y
 var Ylabel = svg.append("text")
 				.attr("class", "label-y")
 				.attr("transform", "rotate(-90)")
@@ -59,7 +52,6 @@ var Ylabel = svg.append("text")
 				.style("text-anchor", "middle")
 				.text("Alumnos");
 
-// Label eje X
 var	Xlabel = svg.append("text")
 				.attr("class", "label-x")
 				.attr("transform",
@@ -69,7 +61,6 @@ var	Xlabel = svg.append("text")
 				.style("text-anchor", "middle")
 				.text("generación");
 
-// Para Mouseover
 var	tooltip = d3.select("body").append("div")
 	                .style("position", "absolute")
 	                .attr("class", "tooltip")
@@ -77,9 +68,15 @@ var	tooltip = d3.select("body").append("div")
 	                .style("top", "50px")
 	                .style("opacity", 0);
 
+// anadir zoom
+// var zoom = d3.zoom()
+//     .scaleExtent([1, 40])
+//     .on("zoom", zoomed);
 
-// Escala de colores, para añadir más es necesario concatenar colores a la lista
 var colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+var legendw = width + 30;
+var legendh = height*2/3 + 10;
 
 var colores = d3.schemeReds[4];
 colores = colores.concat(d3.schemeBlues[5]);
@@ -98,7 +95,6 @@ colores.push("#d57e7e");
 colores.push("#9d2020");
 colores.push("#a56e6e");
 
-// Variables para funciones
 var eso = 0;
 
 var botones = 0;
@@ -115,14 +111,13 @@ var t = d3.transition()
             .duration(800);
 
 var filtro_anos = ["2013", "2014", "2015", "2016", "2017"]
-var grafics = ["Matemáticas Discretas"];
+var grafics = [];
 var optativos = true;
 var major = true;
 var minor = true;
 var resto = true;
+var ramosactivos = {}
 
-
-// Leer los datos y crear primer gráfico
 d3.csv("data/Datos_programacion.csv").then(dataset => {
 	eso = d3.nest()
 				.key(function(d) {return d["BLOQUE ACADÉMICO"]})
@@ -146,29 +141,23 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			"2018" : d[0]["Alumnos que falta por aprobar 2018"]}})
 		.entries(dataset);
 	
-	let ramos = [];
+	var ramos = [];
 	symbols.forEach((element, i) => {
 		ramos.push({"text": element.key});
-		ramos2[element.key] = i;
+		ramos2[element.key] = i + 1;
 	});
-
 	botones = d3.select("#Botones")
 					.append("div");
-	
-	botones.append("button")
-			.text("Matemáticas Discretas")
-			.on("click", quitar)
-			.attr("class", "button ");
 
-	d3.select("#Complete")
-		.on('change', cambiar);
-	d3.select("#Select")			
-		.selectAll('option')
-			.data(ramos)
-			.enter()
-		.append('option')
-			.attr('value', function(d) {return d.text})
-			.text(function (d) {return d.text});
+	var input = d3.select("#Complete")
+					.on('change', cambiar)				
+		datalist = d3.select("#Select")			
+				.selectAll('option')
+					.data(ramos)
+					.enter()
+				.append('option')
+					.attr('value', function(d) {return d.text})
+					.text(function (d) {return d.text});
 	
 	d3.select("body").append("br");				
 	var filtro = d3.select("#Filtros")
@@ -226,10 +215,10 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			for(let i = 2013; i <= 2018; i++) {
 				if(anos.length < 7) {
 					if(element.value[i] != "") {
-						anos.push({x: i, y: parseInt(element.value[i])});
+						anos.push({x: i, y: parseInt(element.value[i]), tipo: element.value["TCurso"].includes("Optativo"), major: element.key});
 					}
 					else {
-						anos.push({x: i, y: 0});
+						anos.push({x: i, y: 0,major: element.key , tipo: element.value["TCurso"].includes("Optativo")});
 					};
 				}
 				else {
@@ -242,61 +231,8 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 		cantidad[d.key] = anos;
 	});
 	// cambio de barras
-	let mayor = Math.max.apply(Math, cantidad["Matemáticas Discretas"].map(function(o) {return o.y}));
-	yScale.domain([0, 1.05*mayor]);
-	yScale0.domain([0, 1.05*mayor]);
-
 	yAxis.transition().call(yGen);
-	// Falta poner barras simples, luego completar las funciones anadir y quitar
-	simbolos["Matemáticas Discretas"].forEach(d => {
-		if(d.valor > 0 ) {
-			svg.append("rect")
-				.attr("class", "barras " + "numero" + ramos2["Matemáticas Discretas"])
-				.attr("x", (function() {
-					if(d.year == "2018"){
-						return xScale("Total") + 8
-				}else{
-					return xScale(d.year) + 8
-				}}))
-				.attr("y", height)
-				.attr("height", 0)
-				.attr("width", 80)
-				.on("mouseover", function() {
-					d3.select(this)
-						.attr("stroke-opacity", 1);
-
-					tooltip.transition()
-                    .duration(300)
-                    .style("opacity", 1);
-
-                    tooltip
-                    .style("left", (d3.event.pageX + 10) + "px")
-                    .style("top", (d3.event.pageY + 10) + "px")
-                    .html(d.major +  "<br>" + "Alumnos: " + d.valor
-                     + "<br>" + "Total Año: " + total(d.year, "Matemáticas Discretas"))
-
-				})
-				.on("mouseout", function() {
-					d3.select(this)
-						.attr("stroke-opacity", 0);
-					d3.selectAll(".major").remove()
-					tooltip
-	    	  			.style("opacity", 0)
-				})
-				.on("mousemove", function(d) {
-					tooltip
-				      .style("left", (d3.event.pageX + 10) + "px")
-				      .style("top", (d3.event.pageY - 30) + "px")})
-				.transition(t)
-				.attr("y", yScale(y0[d.year] + d.valor))
-				.attr("fill", paleta[d.major])
-				.attr("height", height - yScale(d.valor))
-				.attr("stroke", "black")
-				.attr("stroke-width", 2)
-				.attr("stroke-opacity", 0)
-			y0[d.year] += d.valor;
-		}	
-	})
+	// Falta poner barras simples, luego completar las funciones anadir y quitar)
 
 	for(let i = 2013; i <= 2018; i++) {
 		y0[i] = 0;
@@ -305,22 +241,34 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 
 
 function poner_grafico() {
+	xScale.domain(filtro_anos.concat(["Total"]))
+	xScale.paddingInner(0)
+	xAxis.transition().call(xGen) 
 	grafics.forEach((d,i) => {
+		ramosactivos[d] = {}
+		filtro_anos.forEach((elemento) => {
+		ramosactivos[d][elemento] = 0
+	});
+		ramosactivos[d][2018] = 0
 		svg.selectAll(".numero" + ramos2[d]).remove();
 		simbolos[d].forEach(element => {
+			if (isNaN(ramosactivos[d][element.year])){
+				return
+			}
 			if(element.valor > 0) {
 				if (optativos || !(element.tipo)) {
 					if (major || !(element.major.includes("Major"))) {
 						if (minor || !(element.major.includes("Minor"))) {
 							if (resto || element.major.includes("Major") || element.major.includes("Minor")) {
+								ramosactivos[d][element.year] += element.valor
 								svg.append("rect")
 									.attr("class", "barras " + "numero" + ramos2[d])
 									.attr("class", "barras " + "numero" + ramos2[d])
 									.attr("x", (function() {
 										if(element.year == "2018"){
-											return xScale("Total") + (80/grafics.length)*(i) + 8
+											return xScale("Total") + (80/grafics.length)*(i) + 30 * (inas - (filtro_anos.length))/(filtro_anos.length + 1)
 									}else{
-										return xScale(element.year) + (80/grafics.length)*(i) + 8
+										return xScale(element.year) + (80/grafics.length)*(i) + 30 * (inas - (filtro_anos.length))/(filtro_anos.length + 1)
 									}}))
 									/*.attr("x", (xScale(element.year) - 40 + (80/grafics.length)*(i)))*/
 									.attr("y", height)
@@ -340,7 +288,8 @@ function poner_grafico() {
 					                    .style("left", (d3.event.pageX + 10) + "px")
 					                    .style("top", (d3.event.pageY + 10) + "px")
 					                    .html(element.major +  "<br>" + "Alumnos: " + element.valor
-					                     + "<br>" + "Total Año: " + total(element.year, d))
+					                     + "<br>" + "Total Año: " + ramosactivos[d][element.year]
+					                     )
 									})
 									.on("mouseout", function() {
 										d3.select(this)
@@ -373,7 +322,8 @@ function poner_grafico() {
 };
 function cambiar() {
 	if(ramos2[this.value])
-		{anadir(this.value)}
+		{
+			anadir(this.value)}
 	else{
 	}
 }
@@ -391,6 +341,7 @@ function anadir(ramo) {
 	yAxis.transition().call(yGen);
 
 	// Poner barras nuevas y cambiar antiguas;
+
 	poner_grafico();
 	
 	// anadir boton
@@ -442,7 +393,6 @@ function calcular_total() {
 	};
 	poner_grafico();
 };
-
 function filtrar_anos() {
 	let index = filtro_anos.indexOf(this.textContent);
 	if (index >= 0) {
@@ -503,19 +453,3 @@ function filtrar_resto() {
 	}
 	poner_grafico();
 };
-
-function total(ano, ramo) {
-	a = 0
-	cantidad[ramo].forEach(function(d){
-		if (d.x == ano){
-			a = d.y;
-		}
-	})
-	return a
-	};
-
-// function zoomed() {
-// 	view.attr("transform", d3.event.transform);
-// 	xAxis.call(xGen.scale(d3.event.transform.rescaleX(x)));
-// 	yAxis.call(yGen.scale(d3.event.transform.rescaleY(y)));
-// };
