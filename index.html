@@ -22,18 +22,21 @@
   <body>
   	<style>
   			.tooltip {
-	  position: absolute;
-	  text-align: center;
-  	  box-shadow: 0px 3px 9px rgba(0, 0, 0, .15);
-	  max-width: 210px;
-	  max-height: 80px;
-	  padding: 8px;
-	  margin-top: -20px;
-	  font: 10px sans-serif;
-	  background: #ddd;
-	  pointer-events: none;
-	</style>
+          position: absolute;
+          text-align: center;
+            box-shadow: 0px 3px 9px rgba(0, 0, 0, .15);
+          max-width: 210px;
+          max-height: 80px;
+          padding: 8px;
+          margin-top: -20px;
+          font: 10px sans-serif;
+          background: #ddd;
+          pointer-events: none;
+        }
+	  </style>
+    
     <!-- Navigation -->
+    
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container">
         <a class="navbar-brand" href="#">
@@ -63,43 +66,59 @@
       </div>
     </nav>
 
+    <br>
+    <br>
     <!-- Page Content -->
-    <div class="container">
+    <div>
       <div class="row">
-        <div class="col-md-6 nopadding" id="Cajon">
-          <div align="right">
+        <div  id="Cajon">
+          <div align="left">
               <script src="js/histograma.js"></script>
-            </div>
+              <script src="js/heatmap.js"></script>
+          </div>
         </div>
-        </div>
-        <div class = "row">
-        <div class = "col-md-12">
+      </div>
+      <div class = "row">
+        <div class = "col-md-5">
           <div id="Botones">
           </div>
         </div>
-        </div>
+      </div>
         <br>
         <div class = "row">
-        <div class = "col-md-8" id="input">
-          <div class = "center">
-            <div class="input-group mb-3">
-              <div class = "input-group-prepend">
-                <label class= "input-group-text" for="Select" style="height:30px">Selecciona Ramo:</label>
+          <div class = "col-md-5" id="input">
+            <div class = "center">
+              <div class="input-group mb-3">
+                <div class = "input-group-prepend">
+                  <label class= "input-group-text" for="Select" style="height:30px">Selecciona Ramo:</label>
+                </div>
+                <input id= "Complete" list="Select" class="col-sm-6 custom-select custom-select-sm" style="width:400px">
+                <datalist id="Select"> </datalist>
               </div>
-            <input id= "Complete" list="Select" class="col-sm-6 custom-select custom-select-sm" style="width:400px">
-            <datalist id="Select">
-            </datalist>
+            </div>
+          </div>
+          <div class = "col-md-5" id="input2">
+            <div class = "center">
+              <div class="input-group mb-3">
+                <div class = "input-group-prepend">
+                  <label class= "input-group-text" for="Select2" style="height:30px">Selecciona semestre:</label>
+                </div>
+                <input id= "Complete2" list="Select2" class="col-sm-6 custom-select custom-select-sm" style="width:400px">
+                <datalist id="Select2"> </datalist>
+              </div>
             </div>
           </div>
         </div>
-        </div>
         <div class = "row">
-        <div class = "col-md-12">
-          <div id="Filtros">
+          <div class = "col-md-5">
+            <div id="Filtros"></div>
+          </div>
+          <div class = "col-md-5">
+            <div id="Filtros2"></div>
           </div>
         </div>
-        </div>
     </div>
+
     <!-- /.container -->
 
     <!-- Bootstrap core JavaScript -->

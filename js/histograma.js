@@ -1,4 +1,3 @@
-
 const WIDTH = 1300;
 const HEIGHT = 500;
 const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 650 };
@@ -454,9 +453,3 @@ function filtrar_resto() {
 	}
 	poner_grafico();
 };
-
-// function zoomed() {
-// 	view.attr("transform", d3.event.transform);
-// 	xAxis.call(xGen.scale(d3.event.transform.rescaleX(x)));
-// 	yAxis.call(yGen.scale(d3.event.transform.rescaleY(y)));
-// };
