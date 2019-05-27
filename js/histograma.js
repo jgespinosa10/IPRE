@@ -146,7 +146,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			"2018" : d[0]["Alumnos que falta por aprobar 2018"]}})
 		.entries(dataset);
 	
-	var ramos = [];
+	let ramos = [];
 	symbols.forEach((element, i) => {
 		ramos.push({"text": element.key});
 		ramos2[element.key] = i;
@@ -160,15 +160,15 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 			.on("click", quitar)
 			.attr("class", "button ");
 
-	var input = d3.select("#Complete")
-					.on('change', cambiar)				
-		datalist = d3.select("#Select")			
-				.selectAll('option')
-					.data(ramos)
-					.enter()
-				.append('option')
-					.attr('value', function(d) {return d.text})
-					.text(function (d) {return d.text});
+	d3.select("#Complete")
+		.on('change', cambiar);
+	d3.select("#Select")			
+		.selectAll('option')
+			.data(ramos)
+			.enter()
+		.append('option')
+			.attr('value', function(d) {return d.text})
+			.text(function (d) {return d.text});
 	
 	d3.select("body").append("br");				
 	var filtro = d3.select("#Filtros")
