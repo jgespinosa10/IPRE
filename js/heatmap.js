@@ -264,6 +264,9 @@ d3.csv("data/20182.csv").then(dataset1 => {
             .style("fill", function(d) { return color(d[2]/maxRow)} )
             .on("mouseover", function(d) {
               let ojo = (valores[d[0]][d[1]].map(x => x[0])).toString()
+              if(!ojo){
+                ojo = "No hay ramos programados"
+              }
               while(ojo.indexOf(',') != -1){
                 ojo = ojo.replace(',', '<br>  <br>')
               }
@@ -356,6 +359,9 @@ function cambiarheat() {
                         .data(final)
                         .on("mouseover", function(d) {
                                   let ojo = (valores[d[0]][d[1]].map(x => x[0])).toString()
+                                  if(!ojo){
+                                    ojo = "No hay ramos programados"
+                                  }
                                   while(ojo.indexOf(',') != -1){
                                     ojo = ojo.replace(',', '<br>  <br>')
                                   }
