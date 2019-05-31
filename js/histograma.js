@@ -1,6 +1,7 @@
-const WIDTH = 1400;
+
+const WIDTH = 1300;
 const HEIGHT = 500;
-const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 750 };
+const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 650 };
 
 const width = WIDTH - MARGIN.RIGHT - MARGIN.LEFT;
 const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
@@ -14,9 +15,11 @@ var svg = d3.select("#Cajon").append("svg")
 			.attr("width", WIDTH)
 			.append("g")
 			.attr("transform", "translate("+ MARGIN.LEFT + "," + MARGIN.TOP + ")");
-
+var y0 = {};
+var t = d3.transition()
+            .duration(800);
 var xScale = d3.scaleBand()
-				.domain([2013, 2014, 2015, 2016, 2017, "Total"])
+				.domain(["Total"])
 				.range([0, width])
 				.paddingInner(0.5)
 				.paddingOuter(0.5)
@@ -102,15 +105,7 @@ var ramos2 = {};
 var simbolos = {};
 var paleta = {};
 var cantidad = {};
-
-var y0 = {};
-for(let i = 2013; i <= 2018; i++) {
-	y0[i] = 0;
-}
-var t = d3.transition()
-            .duration(800);
-
-var filtro_anos = ["2013", "2014", "2015", "2016", "2017"]
+var filtro_anos = []
 var grafics = [];
 var optativos = true;
 var major = true;
@@ -119,6 +114,25 @@ var resto = true;
 var ramosactivos = {}
 
 d3.csv("data/Datos_programacion.csv").then(dataset => {
+	for(var row of dataset){
+                for(var name of Object.keys(row)){
+                	if(!name.indexOf("Alumnos que falta por aprobar")){
+                		y0[Number(name.slice(-4))] = 0
+                	}
+                }
+                break;
+}
+	var go = Object.keys(y0).map(x => x.toString()).slice(0, y0.length)
+	var ultimo = go.pop();
+	filtro_anos = go
+	var xScale = d3.scaleBand()
+					.domain(go.concat(["Total"]))
+					.range([0, width])
+					.paddingInner(0.5)
+					.paddingOuter(0.5)
+					.padding(0.5)
+					.align(0.5)
+
 	eso = d3.nest()
 				.key(function(d) {return d["BLOQUE ACADÉMICO"]})
 				.entries(dataset);
@@ -131,16 +145,16 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
   	symbols = d3.nest()
 		.key(function(d) {return d["RAMO"]})
 		.key(function(d) {return d["BLOQUE ACADÉMICO"]})
-		.rollup(function(d) {return {"Track" : d[0]["TRACK/ÁREA"], "N": d[0]["N° VERSIONES"], "TCurso" : d[0]["TIPO CURSO"], 
-			"TOpt" : d[0]["TIPO OPTATIVIDAD"], 
-			"2013" : d[0]["Alumnos que falta por aprobar 2013"],
-			"2014" : d[0]["Alumnos que falta por aprobar 2014"],
-			"2015" : d[0]["Alumnos que falta por aprobar 2015"], 
-			"2016" : d[0]["Alumnos que falta por aprobar 2016"],
-			"2017" : d[0]["Alumnos que falta por aprobar 2017"],
-			"2018" : d[0]["Alumnos que falta por aprobar 2018"]}})
+		.rollup(function(d) {diccionario = {}
+			Object.keys(y0).forEach(function(i){
+				diccionario[i.toString()] = d[0]["Alumnos que falta por aprobar " + i.toString()];
+			})
+			var otro = {"Track" : d[0]["TRACK/ÁREA"], "TCurso" : d[0]["TIPO CURSO"],
+			"TOpt" : d[0]["TIPO OPTATIVIDAD"]};
+
+			return Object.assign({}, otro, diccionario)})
 		.entries(dataset);
-	
+
 	var ramos = [];
 	symbols.forEach((element, i) => {
 		ramos.push({"text": element.key});
@@ -150,27 +164,27 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 					.append("div");
 
 	var input = d3.select("#Complete")
-					.on('change', cambiar)				
-		datalist = d3.select("#Select")			
+					.on('change', cambiar)
+		datalist = d3.select("#Select")
 				.selectAll('option')
 					.data(ramos)
 					.enter()
 				.append('option')
 					.attr('value', function(d) {return d.text})
 					.text(function (d) {return d.text});
-	
-	d3.select("body").append("br");				
+
+	d3.select("body").append("br");
 	var filtro = d3.select("#Filtros")
 					.append("div")
-	
-	for(let i = 2013; i < 2018; i++) {
+
+	go.forEach(function(i){
 		filtro.append("button")
 				.text("" + i)
 				.attr("class", "filtro")
 				.style("background-color", "rgb(103, 255, 1)")
 				.on("click", filtrar_anos);
-		
-	};
+
+	});
 	filtro.append("button")
 				.text("Optativos")
 				.attr("class", "filtro")
@@ -197,7 +211,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 
 	symbols.forEach(d => {
 		let total = [];
-		for(let i = 2013; i <= 2018; i++) {
+		Object.keys(y0).forEach(function(i) {
 			d.values.forEach(element => {
 				if(element.value[i] != "") {
 					total.push({year: i, major: element.key, valor: parseInt(element.value[i]), tipo: element.value["TCurso"].includes("Optativo")});
@@ -206,13 +220,13 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 					total.push({year: i, major: element.key, valor: 0, tipo: element.value["TCurso"].includes("Optativo")});
 				}
 			});
-		};
+		});
 		total.sort(function(a , b) { return (b.valor - a.valor);});
 		simbolos[d.key] = total;
 
 		var anos = [];
 		d.values.forEach(element => {
-			for(let i = 2013; i <= 2018; i++) {
+			Object.keys(y0).forEach(function(i) {
 				if(anos.length < 7) {
 					if(element.value[i] != "") {
 						anos.push({x: i, y: parseInt(element.value[i]), tipo: element.value["TCurso"].includes("Optativo"), major: element.key});
@@ -223,10 +237,10 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 				}
 				else {
 					if(element.value[i] != "") {
-						anos[i - 2013].y += parseInt(element.value[i]);
+						anos[i - Object.keys(y0)[0]].y += parseInt(element.value[i]);
 					}
 				};
-			};
+			});
 		});
 		cantidad[d.key] = anos;
 	});
@@ -234,22 +248,22 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
 	yAxis.transition().call(yGen);
 	// Falta poner barras simples, luego completar las funciones anadir y quitar)
 
-	for(let i = 2013; i <= 2018; i++) {
+	Object.keys(y0).forEach(function(i) {
 		y0[i] = 0;
-	};
+	});
 });
 
 
 function poner_grafico() {
 	xScale.domain(filtro_anos.concat(["Total"]))
 	xScale.paddingInner(0)
-	xAxis.transition().call(xGen) 
+	xAxis.transition().call(xGen)
 	grafics.forEach((d,i) => {
 		ramosactivos[d] = {}
 		filtro_anos.forEach((elemento) => {
 		ramosactivos[d][elemento] = 0
 	});
-		ramosactivos[d][2018] = 0
+		ramosactivos[d][Object.keys(y0).slice(-1)[0]] = 0
 		svg.selectAll(".numero" + ramos2[d]).remove();
 		simbolos[d].forEach(element => {
 			if (isNaN(ramosactivos[d][element.year])){
@@ -265,7 +279,7 @@ function poner_grafico() {
 									.attr("class", "barras " + "numero" + ramos2[d])
 									.attr("class", "barras " + "numero" + ramos2[d])
 									.attr("x", (function() {
-										if(element.year == "2018"){
+										if(element.year == Object.keys(y0).slice(-1)[0]){
 											return xScale("Total") + (80/grafics.length)*(i) + 30 * (inas - (filtro_anos.length))/(filtro_anos.length + 1)
 									}else{
 										return xScale(element.year) + (80/grafics.length)*(i) + 30 * (inas - (filtro_anos.length))/(filtro_anos.length + 1)
@@ -294,7 +308,7 @@ function poner_grafico() {
 									.on("mouseout", function() {
 										d3.select(this)
 											.attr("stroke-opacity", 0);
-										
+
 										svg.selectAll(".major").remove()
 										tooltip
 	    	  								.style("opacity", 0)
@@ -315,9 +329,9 @@ function poner_grafico() {
 				};
 			};
 		});
-		for(let i = 2013; i <= 2018; i++) {
+		Object.keys(y0).forEach(function(i) {
 			y0[i] = 0;
-		};
+		});
 	})
 };
 function cambiar() {
@@ -343,7 +357,7 @@ function anadir(ramo) {
 	// Poner barras nuevas y cambiar antiguas;
 
 	poner_grafico();
-	
+
 	// anadir boton
 	botones.append("button")
 			.text(ramo)
@@ -355,7 +369,7 @@ function anadir(ramo) {
 function quitar() {
 	// Quitar barras
 	svg.selectAll(".numero" + ramos2[this.textContent]).remove();
-	
+
 	// quitar ramo del grafico
 	let index = grafics.indexOf(this.textContent);
 	if (index > -1) {
@@ -383,7 +397,7 @@ function sumar_todos(total, num) {
 function calcular_total() {
 	for (var ramo in simbolos) {
 		simbolos[ramo].forEach(d => {
-			if(d.year == (2018 + "")){
+			if(d.year == (ultimo + "")){
 				sumar = simbolos[ramo].filter(element => {
 					return (filtro_anos.indexOf(element.year+"") >= 0 && element.major == d.major);
 				});
@@ -453,3 +467,9 @@ function filtrar_resto() {
 	}
 	poner_grafico();
 };
+
+// function zoomed() {
+// 	view.attr("transform", d3.event.transform);
+// 	xAxis.call(xGen.scale(d3.event.transform.rescaleX(x)));
+// 	yAxis.call(yGen.scale(d3.event.transform.rescaleY(y)));
+// };
