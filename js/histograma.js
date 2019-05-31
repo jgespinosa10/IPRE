@@ -112,6 +112,7 @@ var major = true;
 var minor = true;
 var resto = true;
 var ramosactivos = {}
+var ultimo = "";
 
 d3.csv("data/Datos_programacion.csv").then(dataset => {
 	for(var row of dataset){
@@ -123,7 +124,7 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
                 break;
 }
 	var go = Object.keys(y0).map(x => x.toString()).slice(0, y0.length)
-	var ultimo = go.pop();
+  ultimo = go.pop();
 	filtro_anos = go
 	var xScale = d3.scaleBand()
 					.domain(go.concat(["Total"]))
