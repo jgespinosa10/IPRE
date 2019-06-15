@@ -18,6 +18,7 @@ var dias = ["L", "M", "W", "J", "V", "S"];
 var horarios = ["8:30", "10:00", "11:30", "13:00", "14:00", "15:30", "17:00", "18:30", "20:00"];
 
 var cambio = {"1": "8:30", "2":"10:00", "3":"11:30", "4":"14:00", "5":"15:30", "6":"17:00", "7":"18:30", "8":"20:00"}
+var otrocambio = {"8:30" : "1", "10:00" : "2", "11:30" : "3", "14:00" : "4", "15:30" : "5", "17:00" : "6", "18:30": "7", "20:00" : "8"}
 
 var	tooltip2 = d3.select("body").append("div")
 	                .style("position", "absolute")
@@ -123,6 +124,7 @@ d3.csv("data/20182.csv").then(dataset1 => {
 
         dataset1.forEach(d => {
             let temp = d["Catedra"].split(";");
+                console.log(temp)
             temp.forEach((f,i) => {
                 let a = f.split(":")
                 temp[i] = [a[0], cambio[a[1]]];
@@ -390,8 +392,55 @@ function cambiarheat() {
             .style("fill", function(d) { return color(d[2]/maxRow)} )
 };
 
+function exportar_csv(){
+  const rows = semestres["2018-2"].map(x => Object.values(x));
+  rows.forEach(function(x){
+                    x[2].forEach(function(i){
+                        i[1] = otrocambio[i[1]];
+                    })
+                    x[3].forEach(function(i){
+                        i[1] = otrocambio[i[1]];
+                    })
+                    x[4].forEach(function(i){
+                        i[1] = otrocambio[i[1]];
+                    })
+                    if(x[0] == "Conocimiento, Cultura y Tecnología"){
+                        x[0] = '"Conocimiento, Cultura y Tecnología"'
+                    }
+                    if(x[2][0] == ""){
+                      x[2] = " "}
+                    else{
+                      x[2] = x[2].join(";").split(',').join(":")}
+                    if(x[3][0] == ""){
+                      x[3] = " "}
+                    else {
+                    x[3] = x[3].join(";").split(',').join(":")}
+                    if(x[4][0] == ""){
+                      x[4] = " "}
+                    else{
+                    x[4] = x[4].join(";").split(',').join(":")}})
+  let csvContent = "data:text/csv;charset=utf-8," + "Nombre Curso,NRC,Catedra,Ayudantia,Lab\n"
+    + rows.map(function(e){
+        if(e[2] == ":"){
+            e[2] = ""
+        }
+        if(e[3] == ":"){
+            e[3] = ""
+        }if(e[4] == ":"){
+            e[4] = ""
+        }
+        return e.join(',')
+    }).join("\n")
+  var encodedUri = encodeURI(csvContent);
+  var link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "2018-2.csv");
+  document.body.appendChild(link);
+
+  link.click();
+}
+
 function mostrar_catedra() {
-    console.log(d3.select(this));
     if (catedra) {
 		d3.select(this).style("background-color", "rgb(244, 91, 83)");
 		catedra = false;
