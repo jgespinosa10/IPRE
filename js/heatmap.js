@@ -393,7 +393,7 @@ function cambiarheat() {
 };
 
 function exportar_csv(){
-  const rows = semestres["2018-2"].map(x => Object.values(x));
+  const rows = semestres[semestre].map(x => Object.values(x));
   rows.forEach(function(x){
                     x[2].forEach(function(i){
                         i[1] = otrocambio[i[1]];
@@ -434,7 +434,7 @@ function exportar_csv(){
   var encodedUri = encodeURI(csvContent);
   var link = document.createElement("a");
   link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "2018-2.csv");
+  link.setAttribute("download", semestre + ".csv");
   document.body.appendChild(link);
 
   link.click();
