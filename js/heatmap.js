@@ -121,22 +121,46 @@ d3.csv("data/20182.csv").then(dataset1 => {
             .append('option')
                 .attr('value', function(d) {return d.text})
                 .text(function (d) {return d.text});
-
+        console.log(dataset1);
         dataset1.forEach(d => {
             let temp = d["Catedra"].split(";");
             temp.forEach((f,i) => {
                 let a = f.split(":")
-                temp[i] = [a[0], cambio[a[1]]];
+                if(a[1])
+                {
+                    let b = a[1].replace(new RegExp(' '), '');
+                    temp[i] = [a[0], cambio[b]];    
+                }
+                else
+                {
+                    temp[i] = [a[0], cambio[a[1]]];
+                };
             });
             let temp2 = d["Ayudantia"].split(";");
             temp2.forEach((f,i) => {
                 let a = f.split(":")
-                temp2[i] = [a[0], cambio[a[1]]];
+                if(a[1])
+                {
+                    let b = a[1].replace(new RegExp(' '), '');
+                    temp2[i] = [a[0], cambio[b]];    
+                }
+                else
+                {
+                    temp2[i] = [a[0], cambio[a[1]]];
+                };
             });
             let temp3 = d["Lab"].split(";");
             temp3.forEach((f,i) => {
                 let a = f.split(":")
-                temp3[i] = [a[0], cambio[a[1]]];
+                if(a[1])
+                {
+                    let b = a[1].replace(new RegExp(' '), '');
+                    temp3[i] = [a[0], cambio[b]];    
+                }
+                else
+                {
+                    temp3[i] = [a[0], cambio[a[1]]];
+                };
             });
             semestres["2018-2"].push(
                 {
@@ -152,17 +176,41 @@ d3.csv("data/20182.csv").then(dataset1 => {
             let temp = d["Catedra"].split(";");
             temp.forEach((f,i) => {
                 let a = f.split(":")
-                temp[i] = [a[0], cambio[a[1]]];
+                if(a[1])
+                {
+                    let b = a[1].replace(new RegExp(' '), '');
+                    temp[i] = [a[0], cambio[b]];    
+                }
+                else
+                {
+                    temp[i] = [a[0], cambio[a[1]]];
+                };
             });
             let temp2 = d["Ayudantia"].split(";");
             temp2.forEach((f,i) => {
                 let a = f.split(":")
-                temp2[i] = [a[0], cambio[a[1]]];
+                if(a[1])
+                {
+                    let b = a[1].replace(new RegExp(' '), '');
+                    temp2[i] = [a[0], cambio[b]];    
+                }
+                else
+                {
+                    temp2[i] = [a[0], cambio[a[1]]];
+                };
             });
             let temp3 = d["Lab"].split(";");
             temp3.forEach((f,i) => {
                 let a = f.split(":")
-                temp3[i] = [a[0], cambio[a[1]]];
+                if(a[1])
+                {
+                    let b = a[1].replace(new RegExp(' '), '');
+                    temp3[i] = [a[0], cambio[b]];    
+                }
+                else
+                {
+                    temp3[i] = [a[0], cambio[a[1]]];
+                };
             });
             semestres["2019-1"].push(
                 {
