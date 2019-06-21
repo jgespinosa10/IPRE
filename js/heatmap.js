@@ -124,7 +124,6 @@ d3.csv("data/20182.csv").then(dataset1 => {
 
         dataset1.forEach(d => {
             let temp = d["Catedra"].split(";");
-                console.log(temp)
             temp.forEach((f,i) => {
                 let a = f.split(":")
                 temp[i] = [a[0], cambio[a[1]]];
@@ -393,8 +392,9 @@ function cambiarheat() {
 };
 
 function exportar_csv(){
-  const rows = semestres[semestre].map(x => Object.values(x));
-  rows.forEach(function(x){
+    var copy = semestres[semestre];
+    var rows = copy.map(x => Object.values(x)).slice();
+    rows.forEach(function(x){
                     x[2].forEach(function(i){
                         i[1] = otrocambio[i[1]];
                     })
@@ -419,7 +419,7 @@ function exportar_csv(){
                       x[4] = " "}
                     else{
                     x[4] = x[4].join(";").split(',').join(":")}})
-  let csvContent = "data:text/csv;charset=utf-8," + "Nombre Curso,NRC,Catedra,Ayudantia,Lab\n"
+    let csvContent = "data:text/csv;charset=utf-8," + "Nombre Curso,NRC,Catedra,Ayudantia,Lab\n"
     + rows.map(function(e){
         if(e[2] == ":"){
             e[2] = ""
@@ -431,13 +431,24 @@ function exportar_csv(){
         }
         return e.join(',')
     }).join("\n")
-  var encodedUri = encodeURI(csvContent);
-  var link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", semestre + ".csv");
-  document.body.appendChild(link);
+    semestres[semestre].map(x => Object.values(x)).forEach(function(x){
+                        x[2].forEach(function(i){
+                            i[1] = cambio[i[1]];
+                        })
+                        x[3].forEach(function(i){
+                            i[1] = cambio[i[1]];
+                        })
+                        x[4].forEach(function(i){
+                            i[1] = cambio[i[1]];
+                        })}
+                    )
+   var encodedUri = encodeURI(csvContent);
+   var link = document.createElement("a");
+   link.setAttribute("href", encodedUri);
+   link.setAttribute("download", semestre + ".csv");
+   document.body.appendChild(link);
 
-  link.click();
+   link.click();
 }
 
 function mostrar_catedra() {
