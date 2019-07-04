@@ -7,7 +7,16 @@ function incluye(chico, grande)
     return resp;
 };
 
-const MARGIN2 = { TOP: 20, BOTTOM: 40, LEFT: 750, RIGHT: 70 };
+function elindex(chico, grande)
+{
+    let resp = -1
+    grande.forEach((d, i) => {
+        if (d[0] == chico[0] && d[1] == chico[1]) resp = i;
+    });
+    return resp;
+};
+
+const MARGIN2 = { TOP: 20, BOTTOM: 40, LEFT: 750, RIGHT: 80 };
 
 var svg2 = d3.select("#Cajon").select("svg")
         .append("g")
@@ -121,7 +130,6 @@ d3.csv("data/20182.csv").then(dataset1 => {
             .append('option')
                 .attr('value', function(d) {return d.text})
                 .text(function (d) {return d.text});
-        console.log(dataset1);
         dataset1.forEach(d => {
             let temp = d["Catedra"].split(";");
             temp.forEach((f,i) => {
@@ -336,6 +344,7 @@ d3.csv("data/20182.csv").then(dataset1 => {
             tooltip2
                 .style("left", (d3.event.pageX + 10) + "px")
                 .style("top", (d3.event.pageY - 30) + "px")})
+            .on("click", rehacer)
             .transition()
     });
 });
@@ -539,3 +548,89 @@ function cambioheat() {
     semestre = this.value;
     cambiarheat();
 };
+
+function rehacer() {
+    d3.selectAll(".horario").remove()
+    mostrar = this.__data__
+    let ramos = []
+    semestres[semestre].forEach(d => {
+        if (catedra) {
+            d["catedra"].forEach(element => {
+                if(mostrar[0] == element[0] && mostrar[1] == element[1])
+                {
+                    ramos.push(["catedra", d["nombre"], d["NRC"]]);
+                };
+            });
+        };
+        if (ayud) {
+            d["ayudantia"].forEach(element => {
+                if(mostrar[0] == element[0] && mostrar[1] == element[1])
+                {
+                    ramos.push(["ayudantia", d["nombre"], d["NRC"]]);
+                };
+            });
+        };
+        if (lab) {
+            d["lab"].forEach(element => {
+                if(mostrar[0] == element[0] && mostrar[1] == element[1])
+                {
+                    ramos.push(["lab", d["nombre"], d["NRC"]]);
+                };
+            });
+        };
+    });
+
+    if(ramos.length) {
+        let form = d3.select("#Cambioshor")
+                    .append("form")
+                    .attr("class", "horario");
+        
+        let row = form.append("div").attr("class", "row");
+        row.append("div").attr("class", "col-md-3").append('p').text("ramo");
+        row.append("div").attr("class", "col-md-1").append('p').text("tipo");
+        row.append("div").attr("class", "col-md-1").append('p').text("NRC");
+        row.append("div").attr("class", "col-md-2").append('p').text("día");
+        row.append("div").attr("class", "col-md-2").append('p').text("módulo");
+        
+        ramos.forEach(d => {
+            
+            let row = form.append("div").attr("class", "row");
+            row.append("div").attr("class", "col-md-3").append('p').text(d[1]);
+            row.append("div").attr("class", "col-md-1").append('p').text(d[0]);
+            row.append("div").attr("class", "col-md-1").append('p').text(d[2]);
+            row.append("div").attr("class", "col-md-2")
+                    .append("input")
+                    .attr("type", "text")
+                    .attr("class", "dia");
+            row.append("div").attr("class", "col-md-2")
+                    .append("input")
+                    .attr("type", "number")
+                    .attr("class", "horas");
+        });
+        form.append("input").attr("type", "submit")
+            .on("click", function() {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+
+                diascamb = d3.selectAll(".dia").nodes();
+                horascamb = d3.selectAll(".horas").nodes();
+                for(let i = 0; i < diascamb.length; i++) {
+                    let a = horascamb[i].valueAsNumber;
+                    let b = diascamb[i].value.toUpperCase();
+                    if(!(isNaN(a)) && 0 < a && a < 9 && (dias.includes(b))) {
+                        for(let j = 0; j < semestres[semestre].length; j++) {
+                            if(semestres[semestre][j]["nombre"] == ramos[i][1] && 
+                            semestres[semestre][j]["NRC"] == ramos[i][2]) {
+                                let index = elindex(mostrar, semestres[semestre][j][ramos[i][0]]);
+                                semestres[semestre][j][ramos[i][0]][index] = [b, cambio[a]];
+                            }
+                        }
+                    }
+                };
+            
+            d3.selectAll(".horario").remove()
+            cambiarheat();
+        });
+        
+    };
+}

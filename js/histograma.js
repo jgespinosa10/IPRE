@@ -1,7 +1,7 @@
 
-const WIDTH = 1400;
+const WIDTH = 1410;
 const HEIGHT = 500;
-const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 750 };
+const MARGIN = { TOP: 20, BOTTOM: 40, LEFT: 50, RIGHT: 760 };
 
 const width = WIDTH - MARGIN.RIGHT - MARGIN.LEFT;
 const height = HEIGHT - MARGIN.TOP - MARGIN.BOTTOM;
