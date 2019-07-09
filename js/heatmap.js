@@ -590,7 +590,7 @@ function rehacer() {
                     .attr("type", "number")
                     .attr("class", "horas");
         });
-        form.append("input").attr("type", "submit")
+        form.append("input").attr("type", "submit").attr("value", "cambiar")
             .on("click", function() {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
