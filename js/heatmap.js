@@ -26,15 +26,40 @@ var svg2 = d3.select("#Cajon").select("svg")
 var dias = ["L", "M", "W", "J", "V", "S"];
 var horarios = ["8:30", "10:00", "11:30", "13:00", "14:00", "15:30", "17:00", "18:30", "20:00"];
 
-var cambio = {"1": "8:30", "2":"10:00", "3":"11:30", "4":"14:00", "5":"15:30", "6":"17:00", "7":"18:30", "8":"20:00"}
-var otrocambio = {"8:30" : "1", "10:00" : "2", "11:30" : "3", "14:00" : "4", "15:30" : "5", "17:00" : "6", "18:30": "7", "20:00" : "8"}
+var cambio = {  "1": "8:30",
+                "2":"10:00",
+                "3":"11:30",
+                "4":"14:00",
+                "5":"15:30",
+                "6":"17:00",
+                "7":"18:30",
+                "8":"20:00"};
+
+var otrocambio = {  "8:30" : "1",
+                    "10:00" : "2",
+                    "11:30" : "3",
+                    "14:00" : "4",
+                    "15:30" : "5",
+                    "17:00" : "6",
+                    "18:30": "7",
+                    "20:00" : "8"}
+
+var semestres = {"2018-2": [], "2019-1": []},
+    iterar = ["2018-2", "2019-1"]
+    ubicacion = ["data/20182.csv", "data/20191.csv"],
+    semestre = iterar[0],
+    catedra = true,
+    ayud = true,
+    lab = true,
+    maxRow = 5;
 
 var	tooltip2 = d3.select("body").append("div")
 	                .style("position", "absolute")
 	                .attr("class", "tooltip2")
 	                .style("left", "70px")
 	                .style("top", "50px")
-	                .style("opacity", 0);
+                    .style("opacity", 0);
+
 // Armar escalas
 var x = d3.scaleBand()
         .range([0, width])
@@ -106,31 +131,10 @@ legendSvg.append('rect')
                         .attr('height', legendheight)
                         .style('fill', "url(#linear-gradient)");
 
-var semestres = {"2018-2": [], "2019-1": []},
-    semestre = "2018-2",
-    catedra = true,
-    ayud = true,
-    lab = true,
-    maxRow = 5;
-
 //Read the data
-d3.csv("data/20182.csv").then(dataset1 => {
-    d3.csv("data/20191.csv").then(dataset2 => {
-
-        let elegir = [{"text": "2018-2"},
-                      {"text": "2019-1"}]
-
-        d3.select("#Complete2")
-            .on('change', cambioheat);
-
-        d3.select("#Select2")
-            .selectAll('option')
-                .data(elegir)
-                .enter()
-            .append('option')
-                .attr('value', function(d) {return d.text})
-                .text(function (d) {return d.text});
-        dataset1.forEach(d => {
+for(let actual = 0; actual < iterar.length; actual++) {
+    d3.csv(ubicacion[actual]).then(dataset => {
+        dataset.forEach(d => {
             let temp = d["Catedra"].split(";");
             temp.forEach((f,i) => {
                 let a = f.split(":")
@@ -170,57 +174,8 @@ d3.csv("data/20182.csv").then(dataset1 => {
                     temp3[i] = [a[0], cambio[a[1]]];
                 };
             });
-            semestres["2018-2"].push(
-                {
-                    "nombre": d["Nombre Curso"],
-                    "NRC":d["NRC"],
-                    "catedra": temp,
-                    "ayudantia": temp2,
-                    "lab":temp3
-                }
-            );
-        })
-        dataset2.forEach(d => {
-            let temp = d["Catedra"].split(";");
-            temp.forEach((f,i) => {
-                let a = f.split(":")
-                if(a[1])
-                {
-                    let b = a[1].replace(new RegExp(' '), '');
-                    temp[i] = [a[0], cambio[b]];    
-                }
-                else
-                {
-                    temp[i] = [a[0], cambio[a[1]]];
-                };
-            });
-            let temp2 = d["Ayudantia"].split(";");
-            temp2.forEach((f,i) => {
-                let a = f.split(":")
-                if(a[1])
-                {
-                    let b = a[1].replace(new RegExp(' '), '');
-                    temp2[i] = [a[0], cambio[b]];    
-                }
-                else
-                {
-                    temp2[i] = [a[0], cambio[a[1]]];
-                };
-            });
-            let temp3 = d["Lab"].split(";");
-            temp3.forEach((f,i) => {
-                let a = f.split(":")
-                if(a[1])
-                {
-                    let b = a[1].replace(new RegExp(' '), '');
-                    temp3[i] = [a[0], cambio[b]];    
-                }
-                else
-                {
-                    temp3[i] = [a[0], cambio[a[1]]];
-                };
-            });
-            semestres["2019-1"].push(
+
+            semestres[iterar[actual]].push(
                 {
                     "nombre": d["Nombre Curso"],
                     "NRC":d["NRC"],
@@ -231,123 +186,142 @@ d3.csv("data/20182.csv").then(dataset1 => {
             );
         });
 
-        var filtro = d3.select("#Filtros2")
+        if(actual == 0) {
+            let elegir = [];
+            iterar.forEach(d => {
+                elegir.push({"text": d});
+            });
+
+            d3.select("#Complete2")
+                .on('change', cambioheat);
+
+            d3.select("#Select2")
+                .selectAll('option')
+                    .data(elegir)
+                    .enter()
+                .append('option')
+                    .attr('value', function(d) {return d.text})
+                    .text(function (d) {return d.text});
+
+            var filtro = d3.select("#Filtros2")
 					.append("div");
 
-        filtro.append("button")
-				.text("catedra")
-				.attr("class", "filtro")
-				.style("background-color", "rgb(103, 255, 1)")
-                .on("click", mostrar_catedra);
+            filtro.append("button")
+                    .text("catedra")
+                    .attr("class", "filtro")
+                    .style("background-color", "rgb(103, 255, 1)")
+                    .on("click", mostrar_catedra);
 
-        filtro.append("button")
-				.text("ayudantía")
-				.attr("class", "filtro")
-				.style("background-color", "rgb(103, 255, 1)")
-                .on("click", mostrar_ayudantia);
+            filtro.append("button")
+                    .text("ayudantía")
+                    .attr("class", "filtro")
+                    .style("background-color", "rgb(103, 255, 1)")
+                    .on("click", mostrar_ayudantia);
 
-        filtro.append("button")
-				.text("Lab")
-				.attr("class", "filtro")
-				.style("background-color", "rgb(103, 255, 1)")
-                .on("click", mostrar_lab);
+            filtro.append("button")
+                    .text("Lab")
+                    .attr("class", "filtro")
+                    .style("background-color", "rgb(103, 255, 1)")
+                    .on("click", mostrar_lab);
 
-        let valores = {
-                    "L":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
-                    "M":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
-                    "W":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
-                    "J":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
-                    "V":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
-                    "S":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]}
-                };
-        semestres[semestre].forEach(d => {
-            d["catedra"].forEach(f => {
-                if (Object.keys(valores).indexOf(f[0]) >= 0)
-                {
-                    if (Object.keys(valores[f[0]]).indexOf(f[1]) >= 0)
+            let valores = {
+                        "L":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
+                        "M":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
+                        "W":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
+                        "J":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
+                        "V":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]},
+                        "S":{"8:30":[], "10:00":[], "11:30":[], "14:00":[], "15:30":[], "17:00":[], "18:30":[], "20:00":[]}
+                    };
+            semestres[semestre].forEach(d => {
+                d["catedra"].forEach(f => {
+                    if (Object.keys(valores).indexOf(f[0]) >= 0)
                     {
-                        if (!incluye([d["nombre"], "catedra"] , valores[f[0]][f[1]])) {
-                            valores[f[0]][f[1]].push([d["nombre"], "catedra"]);
+                        if (Object.keys(valores[f[0]]).indexOf(f[1]) >= 0)
+                        {
+                            if (!incluye([d["nombre"], "catedra"] , valores[f[0]][f[1]])) {
+                                valores[f[0]][f[1]].push([d["nombre"], "catedra"]);
+                            };
                         };
                     };
-                };
-            });
-            d["ayudantia"].forEach(f => {
-                if (Object.keys(valores).indexOf(f[0]) >= 0)
-                {
-                    if (Object.keys(valores[f[0]]).indexOf(f[1]) >= 0)
+                });
+                d["ayudantia"].forEach(f => {
+                    if (Object.keys(valores).indexOf(f[0]) >= 0)
                     {
-                        if (!incluye([d["nombre"], "ayudantia"] , valores[f[0]][f[1]])) {
-                            valores[f[0]][f[1]].push([d["nombre"], "ayudantia"]);
+                        if (Object.keys(valores[f[0]]).indexOf(f[1]) >= 0)
+                        {
+                            if (!incluye([d["nombre"], "ayudantia"] , valores[f[0]][f[1]])) {
+                                valores[f[0]][f[1]].push([d["nombre"], "ayudantia"]);
+                            };
                         };
                     };
-                };
-            });
-            d["lab"].forEach(f => {
-                if (Object.keys(valores).indexOf(f[0]) >= 0)
-                {
-                    if (Object.keys(valores[f[0]]).indexOf(f[1]) >= 0)
+                });
+                d["lab"].forEach(f => {
+                    if (Object.keys(valores).indexOf(f[0]) >= 0)
                     {
-                        if (!incluye([d["nombre"], "lab"] , valores[f[0]][f[1]])) {
-                            valores[f[0]][f[1]].push([d["nombre"], "lab"]);
+                        if (Object.keys(valores[f[0]]).indexOf(f[1]) >= 0)
+                        {
+                            if (!incluye([d["nombre"], "lab"] , valores[f[0]][f[1]])) {
+                                valores[f[0]][f[1]].push([d["nombre"], "lab"]);
+                            };
                         };
                     };
-                };
+                });
             });
-        });
 
-        let final = [];
-        Object.keys(valores).forEach(d => {
-            Object.keys(valores[d]).forEach(f => {
-                final.push([d, f, valores[d][f].length])
-            })
-        });
+            let final = [];
+            Object.keys(valores).forEach(d => {
+                Object.keys(valores[d]).forEach(f => {
+                    final.push([d, f, valores[d][f].length])
+                })
+            });
 
-        maxRow = Math.max(Math.max.apply(Math, final.map(function (i) {
-                                return i[2];})),
-                            5);
-        legendscale.domain([0, maxRow]);
-        legendGen.ticks(maxRow);
-        legendAxis.call(legendGen);
-        svg2.selectAll()
-            .data(final)
-            .enter()
-            .append("rect")
-            .attr("class", "mapa")
-            .attr("x", function(d) { return x(d[0]) })
-            .attr("y", function(d) { return y(d[1]) })
-            .attr("width", x.bandwidth() )
-            .attr("height", y.bandwidth() )
-            .style("fill", function(d) { return color(d[2]/maxRow)} )
-            .on("mouseover", function(d) {
-              let ojo = (valores[d[0]][d[1]].map(x => x[0])).toString()
-              if(!ojo){
-                ojo = "No hay ramos programados"
-              }
-              while(ojo.indexOf(',') != -1){
-                ojo = ojo.replace(',', '<br>  <br>')
-              }
-              tooltip2.transition()
-                        .duration(300)
-                        .style("opacity", 1);
+            maxRow = Math.max(Math.max.apply(Math, final.map(function (i) {
+                                    return i[2];})),
+                                5);
+            legendscale.domain([0, maxRow]);
+            legendGen.ticks(maxRow);
+            legendAxis.call(legendGen);
+            svg2.selectAll()
+                .data(final)
+                .enter()
+                .append("rect")
+                .attr("class", "mapa")
+                .attr("x", function(d) { return x(d[0]) })
+                .attr("y", function(d) { return y(d[1]) })
+                .attr("width", x.bandwidth() )
+                .attr("height", y.bandwidth() )
+                .style("fill", function(d) { return color(d[2]/maxRow)} )
+                .on("mouseover", function(d) {
+                let ojo = (valores[d[0]][d[1]].map(x => x[0])).toString()
+                if(!ojo){
+                    ojo = "No hay ramos programados"
+                }
+                while(ojo.indexOf(',') != -1){
+                    ojo = ojo.replace(',', '<br>  <br>')
+                }
+                tooltip2.transition()
+                            .duration(300)
+                            .style("opacity", 1);
 
-                        tooltip2
-                        .style("left", (d3.event.pageX + 10) + "px")
-                        .style("top", (d3.event.pageY + 10) + "px")
-                        .html(ojo)
-            })
-            .on("mouseout", function() {
-              tooltip2
-                    .style("opacity", 0)
-            })
-            .on("mousemove", function(d) {
-            tooltip2
-                .style("left", (d3.event.pageX + 10) + "px")
-                .style("top", (d3.event.pageY - 30) + "px")})
-            .on("click", rehacer)
-            .transition()
-    });
-});
+                            tooltip2
+                            .style("left", (d3.event.pageX + 10) + "px")
+                            .style("top", (d3.event.pageY + 10) + "px")
+                            .html(ojo)
+                })
+                .on("mouseout", function() {
+                tooltip2
+                        .style("opacity", 0)
+                })
+                .on("mousemove", function(d) {
+                tooltip2
+                    .style("left", (d3.event.pageX + 10) + "px")
+                    .style("top", (d3.event.pageY - 30) + "px")})
+                .on("click", rehacer)
+                .transition()
+        }
+        
+    })
+}
 
 function cambiarheat() {
     let valores = {
@@ -545,8 +519,13 @@ function mostrar_lab() {
 };
 
 function cambioheat() {
-    semestre = this.value;
-    cambiarheat();
+    if(iterar.includes(this.value)) {
+        semestre = this.value;
+        cambiarheat();
+    }
+    else {
+        alert("elige un semestre válido")
+    };
 };
 
 function rehacer() {

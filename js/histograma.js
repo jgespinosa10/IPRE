@@ -15,6 +15,7 @@ var svg = d3.select("#Cajon").append("svg")
 			.attr("width", WIDTH)
 			.append("g")
 			.attr("transform", "translate("+ MARGIN.LEFT + "," + MARGIN.TOP + ")");
+
 var y0 = {};
 var t = d3.transition()
             .duration(800);
@@ -71,11 +72,6 @@ var	tooltip = d3.select("body").append("div")
 	                .style("top", "50px")
 	                .style("opacity", 0);
 
-// anadir zoom
-// var zoom = d3.zoom()
-//     .scaleExtent([1, 40])
-//     .on("zoom", zoomed);
-
 var colors = d3.scaleOrdinal(d3.schemeCategory10);
 
 var legendw = width + 30;
@@ -122,9 +118,9 @@ d3.csv("data/Datos_programacion.csv").then(dataset => {
                 	}
                 }
                 break;
-}
+	}
 	var go = Object.keys(y0).map(x => x.toString()).slice(0, y0.length)
-  ultimo = go.pop();
+  	ultimo = go.pop();
 	filtro_anos = go
 	var xScale = d3.scaleBand()
 					.domain(go.concat(["Total"]))
@@ -340,6 +336,7 @@ function cambiar() {
 		{
 			anadir(this.value)}
 	else{
+		alert("elige un ramo valido");
 	}
 }
 function anadir(ramo) {
