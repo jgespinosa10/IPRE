@@ -44,14 +44,18 @@ var otrocambio = {  "8:30" : "1",
                     "18:30": "7",
                     "20:00" : "8"}
 
-var semestres = {"2018-2": [], "2019-1": []},
-    iterar = ["2018-2", "2019-1"]
+var iterar = ["2018-2", "2019-1"]
     ubicacion = ["data/20182.csv", "data/20191.csv"],
     semestre = iterar[0],
     catedra = true,
     ayud = true,
     lab = true,
     maxRow = 5;
+
+var semestres = {};
+iterar.forEach(d => {
+    semestres[d] = [];
+});
 
 var	tooltip2 = d3.select("body").append("div")
 	                .style("position", "absolute")
